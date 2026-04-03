@@ -55,11 +55,11 @@ export async function requireAuth(
   try {
     const payload = verifyToken(token);
 
-    if (payload.userId === LOCAL_ADMIN_USER_ID && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+    if (payload.userId === LOCAL_ADMIN_USER_ID && isLocalAdminEnabled()) {
       const localAdmin = {
         _id: LOCAL_ADMIN_USER_ID,
         name: "Local Admin",
-        email: process.env.ADMIN_EMAIL || "admin@amma.org",
+        email: process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL,
         role: "superadmin",
       } as unknown as IUser;
 
