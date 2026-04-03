@@ -71,7 +71,7 @@ export default function Footer() {
                 {title}
               </h4>
               <ul className="space-y-3">
-                {(links as { label: string; href: string }[]).map((link) => (
+                {(links as unknown as { label: string; href: string }[]).map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
