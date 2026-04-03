@@ -190,7 +190,7 @@ export default function AdminShopProductsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="font-cinzel text-3xl font-bold text-[#D4A853]">Shop Products</h1>
           <p className="text-[#F5F5F5]/40 font-raleway text-sm">Simple catalog management for your store</p>
@@ -300,7 +300,39 @@ export default function AdminShopProductsPage() {
         ) : products.length === 0 ? (
           <div className="p-10 text-center text-[#F5F5F5]/40">No products yet</div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="md:hidden divide-y divide-[#D4A853]/5">
+              {products.map((product) => (
+                <div key={product.id} className="p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-[#1A1A1A] border border-[#D4A853]/10 flex items-center justify-center text-2xl shrink-0">
+                      {product.image ? (
+                        <Image src={product.image} alt={product.title} fill className="object-cover" />
+                      ) : (
+                        <span>{product.emoji}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[#F5F5F5]/85 text-sm font-medium">{product.title}</p>
+                      <p className="text-[#F5F5F5]/35 text-xs mt-1">{product.category} · {product.sku || "No SKU"}</p>
+                      <p className="text-[#D4A853] text-base font-semibold mt-2">₹{product.price.toLocaleString("en-IN")}</p>
+                    </div>
+                    <span className={`text-[11px] px-2 py-1 rounded-full ${product.isPublished ? "bg-green-400/10 text-green-400" : "bg-yellow-400/10 text-yellow-400"}`}>
+                      {product.isPublished ? "Published" : "Draft"}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-[11px] text-[#F5F5F5]/45">
+                    <span className={product.stockQuantity <= 3 ? "text-yellow-400" : ""}>Stock: {product.stockQuantity}</span>
+                    <span>{[product.sizes.length ? `${product.sizes.length} sizes` : "", product.variations.length ? `${product.variations.length} variations` : ""].filter(Boolean).join(" · ") || "Basic"}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => startEdit(product)} className="flex-1 px-3 py-2 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-xs">Edit</button>
+                    <button onClick={() => deleteProduct(product.id)} className="flex-1 px-3 py-2 rounded-full border border-red-400/20 text-red-400 text-xs">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4A853]/10">
@@ -343,7 +375,8 @@ export default function AdminShopProductsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
     </div>

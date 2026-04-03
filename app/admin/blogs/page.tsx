@@ -109,7 +109,7 @@ export default function AdminBlogsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="font-cinzel text-3xl font-bold text-[#D4A853]">Blog Posts</h1>
           <p className="text-[#F5F5F5]/40 font-raleway text-sm">Manage teachings and articles</p>
@@ -179,7 +179,33 @@ export default function AdminBlogsPage() {
             <p className="text-[#F5F5F5]/40 font-raleway text-sm">No blog posts yet. Create your first post!</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="md:hidden divide-y divide-[#D4A853]/5">
+              {blogs.map((blog) => (
+                <div key={blog._id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[#F5F5F5]/85 text-sm font-medium">{blog.title}</p>
+                      <p className="text-[#F5F5F5]/35 text-xs mt-1 capitalize">{blog.category}</p>
+                    </div>
+                    <span className={`text-[11px] px-2 py-1 rounded-full font-raleway ${blog.isPublished ? "text-green-400 bg-green-400/10" : "text-yellow-400 bg-yellow-400/10"}`}>
+                      {blog.isPublished ? "Published" : "Draft"}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-[11px] text-[#F5F5F5]/45">
+                    <span>{blog.readTime ?? "—"} min read</span>
+                    <span>{blog.views ?? 0} views</span>
+                    <span>{formatDate(blog.createdAt)}</span>
+                    {blog.isFeatured ? <span className="text-[#D4A853]">★ Featured</span> : null}
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => handleEdit(blog._id)} className="flex-1 px-3 py-2 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-xs">Edit</button>
+                    <button onClick={() => handleDelete(blog._id)} className="flex-1 px-3 py-2 rounded-full border border-red-400/20 text-red-400 text-xs">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4A853]/10">
@@ -216,7 +242,8 @@ export default function AdminBlogsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
     </div>

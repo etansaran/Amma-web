@@ -26,6 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [user, setUser] = useState<{ name: string; email: string; role?: string } | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const isPrintRoute =
     pathname?.startsWith("/admin/shop-orders/") &&
     (pathname.endsWith("/print") || pathname.endsWith("/invoice"));
@@ -67,6 +68,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     verifyUser();
   }, [pathname, router]);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
 
   // Skip auth wrapper on login page
   if (pathname === "/admin/login") {
@@ -117,18 +122,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-[#0D0D0D] flex">
+      {mobileNavOpen && (
+        <button
+          aria-label="Close navigation"
+          onClick={() => setMobileNavOpen(false)}
+          className="lg:hidden fixed inset-0 bg-black/65 backdrop-blur-sm z-30"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#0d0d0d] border-r border-[#D4A853]/10 flex flex-col fixed top-0 left-0 h-screen z-40">
+      <aside
+        className={`w-72 max-w-[86vw] bg-[#0d0d0d] border-r border-[#D4A853]/10 flex flex-col fixed top-0 left-0 h-screen z-40 transition-transform duration-300 lg:w-64 ${
+          mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
         {/* Logo */}
         <div className="p-6 border-b border-[#D4A853]/10">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#C17F4A] to-[#D4A853] flex items-center justify-center">
-              <span className="text-white text-sm font-bold">ஓம்</span>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#C17F4A] to-[#D4A853] flex items-center justify-center">
+                <span className="text-white text-sm font-bold">ஓம்</span>
+              </div>
+              <div>
+                <p className="font-cinzel text-[#D4A853] text-xs font-semibold leading-tight">Amma Ashram</p>
+                <p className="text-[#F5F5F5]/30 text-xs font-raleway">Admin Portal</p>
+              </div>
             </div>
-            <div>
-              <p className="font-cinzel text-[#D4A853] text-xs font-semibold leading-tight">Amma Ashram</p>
-              <p className="text-[#F5F5F5]/30 text-xs font-raleway">Admin Portal</p>
-            </div>
+            <button
+              onClick={() => setMobileNavOpen(false)}
+              className="lg:hidden w-9 h-9 rounded-full bg-[#151515] border border-[#D4A853]/10 text-[#F5F5F5]/60"
+              aria-label="Close menu"
+            >
+              ✕
+            </button>
           </div>
         </div>
 
@@ -175,8 +201,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main content */}
-      <main className="ml-64 flex-1 p-8 min-h-screen">
+      <main className="lg:ml-64 flex-1 min-h-screen">
+        <div className="lg:hidden sticky top-0 z-20 border-b border-[#D4A853]/10 bg-[#0D0D0D]/95 backdrop-blur-xl">
+          <div className="flex items-center justify-between px-4 py-3">
+            <button
+              onClick={() => setMobileNavOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-[#151515] border border-[#D4A853]/10 text-[#D4A853] text-lg"
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+            <div className="text-right min-w-0">
+              <p className="font-cinzel text-[#D4A853] text-sm truncate">Admin Dashboard</p>
+              <p className="text-[#F5F5F5]/35 text-[11px] font-raleway truncate">
+                {user?.email || "Secure access"}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 sm:p-6 lg:p-8">
         {children}
+        </div>
       </main>
     </div>
   );

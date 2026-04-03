@@ -121,7 +121,32 @@ export default function AdminDonationsPage() {
             <p className="text-[#F5F5F5]/40 font-raleway text-sm">No donations{filter !== "all" ? ` with status "${filter}"` : ""}</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="md:hidden divide-y divide-[#D4A853]/5">
+              {filtered.map((d) => (
+                <div key={d._id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[#F5F5F5]/85 text-sm font-medium">{d.donorName}</p>
+                      <p className="text-[#F5F5F5]/35 text-xs mt-1">{d.donorEmail}</p>
+                    </div>
+                    <span className={`text-[11px] px-2 py-1 rounded-full font-raleway ${statusColors[d.status] || "text-gray-400"}`}>
+                      {d.status}
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-[#D4A853]/10 bg-[#0D0D0D] p-3">
+                    <p className="font-cinzel text-[#D4A853] text-lg">₹{d.amountInINR.toLocaleString("en-IN")}</p>
+                    <p className="text-[#F5F5F5]/35 text-xs">{d.amount} {d.currency} · {d.frequency}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-[11px] text-[#F5F5F5]/45">
+                    <span className="px-2 py-1 rounded-full bg-[#C17F4A]/10 text-[#C17F4A] capitalize">{d.category.replace(/-/g, " ")}</span>
+                    {d.country ? <span>{d.country}</span> : null}
+                    <span>{formatDate(d.createdAt)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4A853]/10">
@@ -158,7 +183,8 @@ export default function AdminDonationsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
     </div>

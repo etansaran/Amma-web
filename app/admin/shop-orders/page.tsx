@@ -81,7 +81,7 @@ export default function AdminShopOrdersPage() {
         <p className="text-[#F5F5F5]/40 font-raleway text-sm">Track orders, payments, and shipping addresses</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         {statCards.map((card) => (
           <div key={card.label} className="rounded-2xl border border-[#D4A853]/10 bg-[#111] p-5">
             <p className="text-2xl mb-3">{card.icon}</p>
@@ -125,35 +125,35 @@ export default function AdminShopOrdersPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-[#D4A853]/10 bg-[#111] p-5">
+        <div className="rounded-2xl border border-[#D4A853]/10 bg-[#111] p-4 sm:p-5">
           {!selectedOrder ? (
             <div className="text-center text-[#F5F5F5]/40 py-16">Select an order to view details</div>
           ) : (
             <div className="space-y-5">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div>
                     <h2 className="font-cinzel text-[#D4A853] text-xl">{selectedOrder.orderNumber}</h2>
                     <p className="text-[#F5F5F5]/40 text-sm">{selectedOrder.customerName} · {selectedOrder.phone}</p>
                   </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Link
                     href={`/admin/shop-orders/${selectedOrder._id}/print`}
                     target="_blank"
-                    className="px-4 py-2 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-xs"
+                    className="px-4 py-2 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-xs text-center"
                   >
                     Print Address
                   </Link>
                   <Link
                     href={`/admin/shop-orders/${selectedOrder._id}/invoice`}
                     target="_blank"
-                    className="px-4 py-2 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-xs"
+                    className="px-4 py-2 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-xs text-center"
                   >
                     Print Invoice
                   </Link>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <select
                   value={selectedOrder.paymentStatus}
                   onChange={(e) => updateOrder(selectedOrder._id, { paymentStatus: e.target.value as ShopOrder["paymentStatus"] })}
@@ -191,7 +191,7 @@ export default function AdminShopOrdersPage() {
                 <p className="text-[#D4A853] text-sm font-medium mb-3">Order items</p>
                 <div className="space-y-3">
                   {selectedOrder.items.map((item, index) => (
-                    <div key={`${item.productId}-${index}`} className="flex justify-between gap-3 text-sm">
+                    <div key={`${item.productId}-${index}`} className="flex items-start justify-between gap-3 text-sm">
                       <div>
                         <p className="text-[#F5F5F5]/75">{item.emoji} {item.title}</p>
                         <p className="text-[#F5F5F5]/35 text-xs">
@@ -201,7 +201,7 @@ export default function AdminShopOrdersPage() {
                             : ""}
                         </p>
                       </div>
-                      <p className="text-[#D4A853]">₹{(item.price * item.quantity).toLocaleString("en-IN")}</p>
+                      <p className="text-[#D4A853] text-right shrink-0">₹{(item.price * item.quantity).toLocaleString("en-IN")}</p>
                     </div>
                   ))}
                 </div>
