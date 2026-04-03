@@ -25,6 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [user, setUser] = useState<{ name: string; email: string; role?: string } | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
   const isPrintRoute =
     pathname?.startsWith("/admin/shop-orders/") &&
     (pathname.endsWith("/print") || pathname.endsWith("/invoice"));
@@ -73,10 +74,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    localStorage.removeItem("admin_token");
-    toast.success("Logged out");
-    router.push("/admin/login");
+    if (loggingOut) return;
+    setLoggingOut(true);
+
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      });
+    } catch {
+      // Even if the request fails, we still clear client auth state below.
+    } finally {
+      localStorage.removeItem("admin_token");
+      setUser(null);
+      toast.success("Logged out");
+      router.replace("/admin/login");
+      router.refresh();
+      setTimeout(() => {
+        if (typeof window !== "undefined") {
+          window.location.href = "/admin/login";
+        }
+      }, 100);
+      setLoggingOut(false);
+    }
   };
 
   if (checkingAuth) {
@@ -145,9 +166,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-2 text-[#C17F4A]/70 hover:text-[#C17F4A] text-sm font-raleway transition-colors"
+            disabled={loggingOut}
+            className="w-full flex items-center gap-3 px-4 py-2 text-[#C17F4A]/70 hover:text-[#C17F4A] text-sm font-raleway transition-colors disabled:opacity-50"
           >
-            🚪 Logout
+            🚪 {loggingOut ? "Logging out..." : "Logout"}
           </button>
         </div>
       </aside>
