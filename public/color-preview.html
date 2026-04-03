@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Color Options</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Georgia, serif; background: #111; padding: 20px; }
+
+    h1 { color: #fff; text-align: center; margin-bottom: 24px; font-size: 22px; letter-spacing: 2px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 700px; margin: 0 auto; }
+
+    .card {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      cursor: pointer;
+    }
+
+    /* ── PREVIEW AREA ── */
+    .preview {
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      position: relative;
+    }
+
+    /* Fake navbar */
+    .nav { display: flex; align-items: center; gap: 8px; margin-bottom: auto; }
+    .nav-dot { width: 28px; height: 28px; border-radius: 50%; }
+    .nav-line { height: 6px; border-radius: 3px; flex: 1; opacity: 0.4; }
+
+    /* Fake heading */
+    .heading { font-size: 15px; font-weight: bold; letter-spacing: 1px; margin-bottom: 6px; }
+
+    /* Fake body text */
+    .body-text { font-size: 10px; opacity: 0.6; line-height: 1.5; margin-bottom: 10px; }
+
+    /* Fake CTA button */
+    .btn {
+      display: inline-block;
+      padding: 7px 18px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── LABEL ── */
+    .label {
+      background: #1a1a1a;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .label-number { color: #D4A853; font-size: 11px; letter-spacing: 2px; margin-bottom: 2px; }
+    .label-name { color: #fff; font-size: 14px; font-weight: bold; }
+    .label-sub { color: #888; font-size: 11px; margin-top: 2px; }
+
+    /* ─────────────────────────────── */
+    /* OPTION 1 — Warm Cream */
+    /* ─────────────────────────────── */
+    .opt1 .preview { background: #FDF6EC; }
+    .opt1 .nav-dot { background: #C17F4A; }
+    .opt1 .nav-line { background: #2D1A0A; }
+    .opt1 .heading { color: #2D1A0A; }
+    .opt1 .body-text { color: #7A5C3A; }
+    .opt1 .btn { background: linear-gradient(96deg,#C17F4A,#D4A853); color: #fff; }
+
+    /* ─────────────────────────────── */
+    /* OPTION 2 — Deep Saffron Dark */
+    /* ─────────────────────────────── */
+    .opt2 .preview { background: #0F0800; }
+    .opt2 .nav-dot { background: linear-gradient(135deg,#FF6B00,#D4A853); }
+    .opt2 .nav-line { background: #FF6B00; }
+    .opt2 .heading { color: #D4A853; }
+    .opt2 .body-text { color: #C17F4A; }
+    .opt2 .btn { background: linear-gradient(96deg,#FF6B00,#D4A853); color: #fff; }
+
+    /* ─────────────────────────────── */
+    /* OPTION 3 — Royal Maroon */
+    /* ─────────────────────────────── */
+    .opt3 .preview { background: #1A0010; }
+    .opt3 .nav-dot { background: linear-gradient(135deg,#8B0000,#D4A853); }
+    .opt3 .nav-line { background: #8B0000; }
+    .opt3 .heading { color: #D4A853; }
+    .opt3 .body-text { color: #C17F4A; }
+    .opt3 .btn { background: linear-gradient(96deg,#8B0000,#D4A853); color: #fff; }
+
+    /* ─────────────────────────────── */
+    /* OPTION 4 — Slate & Gold */
+    /* ─────────────────────────────── */
+    .opt4 .preview { background: #0F1117; }
+    .opt4 .nav-dot { background: linear-gradient(135deg,#D4A853,#C17F4A); }
+    .opt4 .nav-line { background: #D4A853; }
+    .opt4 .heading { color: #D4A853; }
+    .opt4 .body-text { color: rgba(255,255,255,0.5); }
+    .opt4 .btn { background: linear-gradient(96deg,#C17F4A,#D4A853); color: #fff; }
+
+    /* ─────────────────────────────── */
+    /* Swatches row */
+    /* ─────────────────────────────── */
+    .swatches {
+      display: flex;
+      gap: 0;
+      height: 10px;
+    }
+    .swatch { flex: 1; }
+
+    /* current */
+    .current-label {
+      text-align: center;
+      color: #555;
+      font-size: 12px;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+    .current-bar {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px dashed #555;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .current-bar span { color: #999; font-size: 12px; }
+    .x-mark { color: #ff4444; font-size: 22px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>🎨 Choose Your Website Color</h1>
+
+  <!-- Current — rejected -->
+  <div class="current-label">❌ CURRENT (you don't like this)</div>
+  <div class="current-bar">
+    <div style="width:40px;height:40px;background:#fff;border:2px solid #eee;border-radius:8px;"></div>
+    <div style="width:40px;height:40px;background:#F7F7F7;border-radius:8px;"></div>
+    <div style="width:40px;height:40px;background:#101010;border-radius:8px;"></div>
+    <div style="width:40px;height:40px;background:linear-gradient(96deg,#C17F4A,#D4A853);border-radius:8px;"></div>
+    <span>Plain white — too corporate, not spiritual</span>
+  </div>
+
+  <br/>
+  <div style="text-align:center;color:#888;font-size:13px;margin-bottom:16px;">👇 Pick one of these instead</div>
+
+  <div class="grid">
+
+    <!-- Option 1 -->
+    <div class="card opt1">
+      <div class="swatches">
+        <div class="swatch" style="background:#FDF6EC;"></div>
+        <div class="swatch" style="background:#C17F4A;"></div>
+        <div class="swatch" style="background:#D4A853;"></div>
+        <div class="swatch" style="background:#2D1A0A;"></div>
+      </div>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-dot"></div>
+          <div class="nav-line"></div>
+        </div>
+        <div class="heading">Siva Sri Thiyaneswar</div>
+        <div class="body-text">A sacred portal of divine grace at the foot of Arunachala — where ancient wisdom meets boundless compassion.</div>
+        <div class="btn">Discover Amma's Grace →</div>
+      </div>
+      <div class="label">
+        <div class="label-number">OPTION 1</div>
+        <div class="label-name">☀️ Warm Cream</div>
+        <div class="label-sub">Soft ivory · Traditional · Warm</div>
+      </div>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="card opt2">
+      <div class="swatches">
+        <div class="swatch" style="background:#0F0800;"></div>
+        <div class="swatch" style="background:#FF6B00;"></div>
+        <div class="swatch" style="background:#D4A853;"></div>
+        <div class="swatch" style="background:#C17F4A;"></div>
+      </div>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-dot"></div>
+          <div class="nav-line"></div>
+        </div>
+        <div class="heading">Siva Sri Thiyaneswar</div>
+        <div class="body-text">A sacred portal of divine grace at the foot of Arunachala — where ancient wisdom meets boundless compassion.</div>
+        <div class="btn">Discover Amma's Grace →</div>
+      </div>
+      <div class="label">
+        <div class="label-number">OPTION 2</div>
+        <div class="label-name">🔥 Deep Saffron Dark</div>
+        <div class="label-sub">Dark · Saffron orange · Devotional</div>
+      </div>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="card opt3">
+      <div class="swatches">
+        <div class="swatch" style="background:#1A0010;"></div>
+        <div class="swatch" style="background:#8B0000;"></div>
+        <div class="swatch" style="background:#D4A853;"></div>
+        <div class="swatch" style="background:#C17F4A;"></div>
+      </div>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-dot"></div>
+          <div class="nav-line"></div>
+        </div>
+        <div class="heading">Siva Sri Thiyaneswar</div>
+        <div class="body-text">A sacred portal of divine grace at the foot of Arunachala — where ancient wisdom meets boundless compassion.</div>
+        <div class="btn">Discover Amma's Grace →</div>
+      </div>
+      <div class="label">
+        <div class="label-number">OPTION 3</div>
+        <div class="label-name">🏛️ Royal Maroon</div>
+        <div class="label-sub">Deep maroon · Temple style · Gold</div>
+      </div>
+    </div>
+
+    <!-- Option 4 -->
+    <div class="card opt4">
+      <div class="swatches">
+        <div class="swatch" style="background:#0F1117;"></div>
+        <div class="swatch" style="background:#1E2235;"></div>
+        <div class="swatch" style="background:#D4A853;"></div>
+        <div class="swatch" style="background:#C17F4A;"></div>
+      </div>
+      <div class="preview">
+        <div class="nav">
+          <div class="nav-dot"></div>
+          <div class="nav-line"></div>
+        </div>
+        <div class="heading">Siva Sri Thiyaneswar</div>
+        <div class="body-text">A sacred portal of divine grace at the foot of Arunachala — where ancient wisdom meets boundless compassion.</div>
+        <div class="btn">Discover Amma's Grace →</div>
+      </div>
+      <div class="label">
+        <div class="label-number">OPTION 4</div>
+        <div class="label-name">💎 Slate & Gold</div>
+        <div class="label-sub">Dark slate · Premium · Gold accents</div>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="text-align:center;color:#555;font-size:13px;margin-top:24px;">
+    Tell Claude: "I want Option 1" or "Option 2" etc.
+  </p>
+
+</body>
+</html>

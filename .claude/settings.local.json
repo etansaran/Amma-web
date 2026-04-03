@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''scripts'''', {}\\), indent=2\\)\\)\")",
+      "Bash(npm install:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:56294)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:56294/shop)",
+      "WebFetch(domain:www.kovai.co)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:64522)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:58014)",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(x[''''text'''']\\) for x in data[-30:]]\")",
+      "Bash(node_modules/.bin/next build:*)",
+      "Bash(cat \"app/\\(main\\)/page.tsx\")",
+      "Bash(curl -s http://localhost:58014)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//Users/karthick/Documents/Amma Website/**)",
+      "Bash(done)",
+      "Bash(sed -i '' 's/duration: 0.6, delay: i \\\\* 0.1/duration: 0.3, delay: i * 0.06/' components/home/StatsSection.tsx)",
+      "Bash(sed -i '' 's/duration={2.5}/duration={1.5}/' components/home/StatsSection.tsx)",
+      "Bash(cat \"app/\\(main\\)/layout.tsx\")"
+    ]
+  }
+}
