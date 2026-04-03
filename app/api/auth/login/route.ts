@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import {
   createLocalAdminUser,
+  DEFAULT_ADMIN_EMAIL,
+  DEFAULT_ADMIN_PASSWORD,
   isLocalAdminEnabled,
   LOCAL_ADMIN_USER_ID,
   signToken,
@@ -30,8 +32,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (isLocalAdminEnabled()) {
-      const localEmail = process.env.ADMIN_EMAIL!;
-      const localPassword = process.env.ADMIN_PASSWORD!;
+      const localEmail = process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
+      const localPassword = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
 
       if (email === localEmail && password === localPassword) {
         const localUser = createLocalAdminUser();
@@ -55,6 +57,13 @@ export async function POST(request: NextRequest) {
 
         return setAuthCookie(response, token);
       }
+    }
+
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json(
+        { error: "Invalid email or password" },
+        { status: 401 }
+      );
     }
 
     await connectDB();

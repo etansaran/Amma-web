@@ -2,10 +2,11 @@ import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "./mongodb";
 import User, { IUser } from "@/models/User";
-import mongoose from "mongoose";
 
 const JWT_EXPIRY = process.env.JWT_EXPIRY || "7d";
 const LOCAL_ADMIN_USER_ID = "local-admin";
+const DEFAULT_ADMIN_EMAIL = "admin@amma.org";
+const DEFAULT_ADMIN_PASSWORD = "admin";
 
 interface JWTPayload {
   userId: string;
@@ -86,19 +87,20 @@ export async function requireAuth(
 }
 
 export function isLocalAdminEnabled(): boolean {
-  return Boolean(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD);
+  return Boolean(process.env.ADMIN_EMAIL || process.env.ADMIN_PASSWORD || !process.env.MONGODB_URI);
 }
 
 export function createLocalAdminUser() {
   return {
-    _id: new mongoose.Types.ObjectId("000000000000000000000001"),
+    _id: LOCAL_ADMIN_USER_ID,
     name: "Local Admin",
-    email: process.env.ADMIN_EMAIL || "admin@amma.org",
+    email: process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL,
     role: "superadmin",
   };
 }
 
 export { LOCAL_ADMIN_USER_ID };
+export { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD };
 
 export function setAuthCookie(response: NextResponse, token: string): NextResponse {
   response.cookies.set("admin_token", token, {
