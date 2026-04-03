@@ -55,11 +55,6 @@ export async function POST(request: NextRequest) {
 
         return setAuthCookie(response, token);
       }
-
-      return NextResponse.json(
-        { error: "Invalid email or password" },
-        { status: 401 }
-      );
     }
 
     await connectDB();

@@ -4,7 +4,6 @@ import { connectDB } from "./mongodb";
 import User, { IUser } from "@/models/User";
 import mongoose from "mongoose";
 
-const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRY = process.env.JWT_EXPIRY || "7d";
 const LOCAL_ADMIN_USER_ID = "local-admin";
 
@@ -16,14 +15,20 @@ interface JWTPayload {
   exp?: number;
 }
 
+function getJwtSecret(): string {
+  return (
+    process.env.JWT_SECRET ||
+    process.env.ADMIN_PASSWORD ||
+    "amma-default-admin-secret-change-this"
+  );
+}
+
 export function signToken(payload: Omit<JWTPayload, "iat" | "exp">): string {
-  if (!JWT_SECRET) throw new Error("Please define JWT_SECRET in .env.local");
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRY } as jwt.SignOptions);
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: JWT_EXPIRY } as jwt.SignOptions);
 }
 
 export function verifyToken(token: string): JWTPayload {
-  if (!JWT_SECRET) throw new Error("Please define JWT_SECRET in .env.local");
-  return jwt.verify(token, JWT_SECRET) as JWTPayload;
+  return jwt.verify(token, getJwtSecret()) as JWTPayload;
 }
 
 export function extractToken(request: NextRequest): string | null {
@@ -50,7 +55,7 @@ export async function requireAuth(
   try {
     const payload = verifyToken(token);
 
-    if (!process.env.MONGODB_URI && payload.userId === LOCAL_ADMIN_USER_ID) {
+    if (payload.userId === LOCAL_ADMIN_USER_ID && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
       const localAdmin = {
         _id: LOCAL_ADMIN_USER_ID,
         name: "Local Admin",
@@ -81,7 +86,7 @@ export async function requireAuth(
 }
 
 export function isLocalAdminEnabled(): boolean {
-  return Boolean(!process.env.MONGODB_URI && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD);
+  return Boolean(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD);
 }
 
 export function createLocalAdminUser() {
