@@ -2,9 +2,11 @@ import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "./mongodb";
 import User, { IUser } from "@/models/User";
+import mongoose from "mongoose";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRY = process.env.JWT_EXPIRY || "7d";
+const LOCAL_ADMIN_USER_ID = "local-admin";
 
 interface JWTPayload {
   userId: string;
@@ -47,6 +49,18 @@ export async function requireAuth(
 
   try {
     const payload = verifyToken(token);
+
+    if (!process.env.MONGODB_URI && payload.userId === LOCAL_ADMIN_USER_ID) {
+      const localAdmin = {
+        _id: LOCAL_ADMIN_USER_ID,
+        name: "Local Admin",
+        email: process.env.ADMIN_EMAIL || "admin@amma.org",
+        role: "superadmin",
+      } as unknown as IUser;
+
+      return { user: localAdmin, error: null };
+    }
+
     await connectDB();
     const user = await User.findById(payload.userId).select("+password");
 
@@ -65,6 +79,21 @@ export async function requireAuth(
     };
   }
 }
+
+export function isLocalAdminEnabled(): boolean {
+  return Boolean(!process.env.MONGODB_URI && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD);
+}
+
+export function createLocalAdminUser() {
+  return {
+    _id: new mongoose.Types.ObjectId("000000000000000000000001"),
+    name: "Local Admin",
+    email: process.env.ADMIN_EMAIL || "admin@amma.org",
+    role: "superadmin",
+  };
+}
+
+export { LOCAL_ADMIN_USER_ID };
 
 export function setAuthCookie(response: NextResponse, token: string): NextResponse {
   response.cookies.set("admin_token", token, {

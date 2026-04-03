@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 
 const loginSchema = z.object({
   email: z.string().email("Valid email required"),
-  password: z.string().min(6, "Password required"),
+  password: z.string().min(5, "Password must be at least 5 characters"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -22,6 +22,19 @@ export default function AdminLoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("admin_token");
+    if (!token) return;
+
+    fetch("/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (res.ok) router.replace("/admin/dashboard");
+      })
+      .catch(() => {});
+  }, [router]);
 
   const onSubmit = async (data: LoginForm) => {
     setLoading(true);

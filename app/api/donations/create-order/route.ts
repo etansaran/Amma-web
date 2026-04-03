@@ -3,10 +3,19 @@ import { connectDB } from "@/lib/mongodb";
 import Donation from "@/models/Donation";
 import { createOrder } from "@/lib/razorpay";
 import { convertToINR } from "@/utils/helpers";
+import { createLocalRecord, LOCAL_MODE, updateStore } from "@/lib/local-store";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    const rateLimit = checkRateLimit(request, "donations-create-order", 10, 60_000);
+    if (!rateLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many donation attempts. Please wait a minute and try again." },
+        { status: 429, headers: { "Retry-After": rateLimit.retryAfter.toString() } }
+      );
+    }
+
     const body = await request.json();
     const {
       donorName,
@@ -29,6 +38,40 @@ export async function POST(request: NextRequest) {
     }
 
     const amountInINR = convertToINR(amount, currency);
+
+    if (LOCAL_MODE || !process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      const donation = createLocalRecord({
+        donorName,
+        donorEmail,
+        donorPhone,
+        country: country || "India",
+        amount,
+        currency,
+        amountInINR,
+        category,
+        frequency,
+        message,
+        panCard,
+        orderId: `local_order_${Date.now()}`,
+        paymentGateway: "local",
+        status: "completed",
+        paymentId: `local_payment_${Date.now()}`,
+      });
+
+      updateStore((store) => {
+        store.donations.unshift(donation);
+      });
+
+      return NextResponse.json({
+        mode: "local",
+        donationId: donation._id,
+        amount: donation.amountInINR,
+        currency: "INR",
+        message: "Donation recorded in local mode",
+      });
+    }
+
+    await connectDB();
 
     // Create Razorpay order (amount in paise)
     const order = await createOrder({

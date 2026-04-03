@@ -1,19 +1,27 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import type { Product } from "@/lib/shopData";
+import type { ShopCartProduct } from "@/lib/shop";
+
+export interface CartSelection {
+  selectedSize?: string;
+  selectedVariation?: string;
+}
 
 export interface CartItem {
-  product: Product;
+  id: string;
+  product: ShopCartProduct;
   quantity: number;
+  selectedSize?: string;
+  selectedVariation?: string;
 }
 
 interface CartContextType {
   items: CartItem[];
   isOpen: boolean;
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (product: ShopCartProduct, selection?: CartSelection) => void;
+  removeFromCart: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -27,27 +35,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product: ShopCartProduct, selection?: CartSelection) => {
+    const cartItemId = [product.id, selection?.selectedSize || "", selection?.selectedVariation || ""].join("__");
     setItems(prev => {
-      const existing = prev.find(i => i.product.id === product.id);
+      const existing = prev.find(i => i.id === cartItemId);
       if (existing) {
         return prev.map(i =>
-          i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+          i.id === cartItemId ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [
+        ...prev,
+        {
+          id: cartItemId,
+          product,
+          quantity: 1,
+          selectedSize: selection?.selectedSize || "",
+          selectedVariation: selection?.selectedVariation || "",
+        },
+      ];
     });
     setIsOpen(true);
   }, []);
 
-  const removeFromCart = useCallback((productId: string) => {
-    setItems(prev => prev.filter(i => i.product.id !== productId));
+  const removeFromCart = useCallback((itemId: string) => {
+    setItems(prev => prev.filter(i => i.id !== itemId));
   }, []);
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
+  const updateQuantity = useCallback((itemId: string, quantity: number) => {
     if (quantity < 1) return;
     setItems(prev =>
-      prev.map(i => i.product.id === productId ? { ...i, quantity } : i)
+      prev.map(i => i.id === itemId ? { ...i, quantity } : i)
     );
   }, []);
 

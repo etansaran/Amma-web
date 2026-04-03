@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import ProductCard from "./ProductCard";
 import CartSidebar from "./CartSidebar";
 import { useCart } from "@/context/CartContext";
-import { products, categories } from "@/lib/shopData";
-import type { ProductCategory } from "@/lib/shopData";
+import { shopCategories, type ShopCategory, type ShopProduct } from "@/lib/shop";
 
 const sortOptions = [
   { value: "featured",   label: "Featured" },
@@ -16,16 +15,49 @@ const sortOptions = [
 ];
 
 export default function ShopContent() {
-  const [activeCategory, setActiveCategory] = useState<ProductCategory>("all");
+  const [activeCategory, setActiveCategory] = useState<ShopCategory>("all");
   const [sortBy, setSortBy] = useState("featured");
   const [search, setSearch] = useState("");
+  const [products, setProducts] = useState<ShopProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const { openCart, totalItems } = useCart();
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    fetch("/api/shop/products?limit=100")
+      .then((response) => response.json())
+      .then((data) => {
+        if (!mounted) return;
+        setProducts(data.products ?? []);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setProducts([]);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const categories = useMemo(() => (
+    shopCategories.map((category) => ({
+      ...category,
+      count: category.id === "all"
+        ? products.length
+        : products.filter((product) => product.category === category.id).length,
+    }))
+  ), [products]);
 
   const filtered = useMemo(() => {
     let list = products.filter(p => {
       const matchCat = activeCategory === "all" || p.category === activeCategory;
       const matchSearch = search === "" ||
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.title.toLowerCase().includes(search.toLowerCase()) ||
         p.tags.some(t => t.includes(search.toLowerCase()));
       return matchCat && matchSearch;
     });
@@ -34,9 +66,10 @@ export default function ShopContent() {
       case "price-asc":  list = [...list].sort((a, b) => a.price - b.price); break;
       case "price-desc": list = [...list].sort((a, b) => b.price - a.price); break;
       case "rating":     list = [...list].sort((a, b) => b.rating - a.rating); break;
+      default:           list = [...list].sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured)); break;
     }
     return list;
-  }, [activeCategory, sortBy, search]);
+  }, [activeCategory, products, sortBy, search]);
 
   return (
     <>
@@ -112,10 +145,10 @@ export default function ShopContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { emoji: "📖", label: "Books",          sub: "Scriptures & Teachings", cat: "books" as ProductCategory,      bg: "from-[#222222] to-[#1A0A02]" },
-              { emoji: "📿", label: "Rudraksha",      sub: "Sacred & Energized",     cat: "rudraksha" as ProductCategory,  bg: "from-[#1A0A2A] to-[#0D0D0D]" },
-              { emoji: "🪔", label: "Home Decor",     sub: "Brass & Sacred Items",   cat: "home-decor" as ProductCategory, bg: "from-[#2A1A02] to-[#0D0D0D]" },
-              { emoji: "🛕", label: "All Products",   sub: "Browse Everything",      cat: "all" as ProductCategory,        bg: "from-[#1A1A0A] to-[#0D0D0D]" },
+              { emoji: "📖", label: "Books",          sub: "Scriptures & Teachings", cat: "books" as ShopCategory,      bg: "from-[#222222] to-[#1A0A02]" },
+              { emoji: "📿", label: "Rudraksha",      sub: "Sacred & Energized",     cat: "rudraksha" as ShopCategory,  bg: "from-[#1A0A2A] to-[#0D0D0D]" },
+              { emoji: "🪔", label: "Home Decor",     sub: "Brass & Sacred Items",   cat: "home-decor" as ShopCategory, bg: "from-[#2A1A02] to-[#0D0D0D]" },
+              { emoji: "🛕", label: "All Products",   sub: "Browse Everything",      cat: "all" as ShopCategory,        bg: "from-[#1A1A0A] to-[#0D0D0D]" },
             ].map(item => (
               <button
                 key={item.label}
@@ -143,7 +176,7 @@ export default function ShopContent() {
               {categories.map(cat => (
                 <button
                   key={cat.id}
-                  onClick={() => setActiveCategory(cat.id as ProductCategory)}
+                  onClick={() => setActiveCategory(cat.id as ShopCategory)}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
                     activeCategory === cat.id
                       ? "bg-[#C17F4A] text-white shadow-[0_0_20px_rgba(193,127,74,0.3)]"
@@ -186,7 +219,13 @@ export default function ShopContent() {
           </p>
 
           {/* Product grid */}
-          {filtered.length > 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="h-[360px] rounded-2xl bg-[#1A1A1A] border border-[#D4A853]/10 animate-pulse" />
+              ))}
+            </div>
+          ) : filtered.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {filtered.map(product => (
                 <ProductCard key={product.id} product={product} />

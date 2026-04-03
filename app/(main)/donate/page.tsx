@@ -84,7 +84,12 @@ export default function DonatePage() {
 
       if (!res.ok) throw new Error("Failed to create order");
 
-      const { orderId, amount: orderAmount, currency, donationId, keyId } = await res.json();
+      const { orderId, amount: orderAmount, currency, donationId, keyId, mode } = await res.json();
+
+      if (mode === "local") {
+        toast.success("🙏 Donation recorded successfully in local mode.");
+        return;
+      }
 
       // Load Razorpay
       const options = {

@@ -2,12 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { connectDB } from "@/lib/mongodb";
 import Donation from "@/models/Donation";
+import { LOCAL_MODE, touch, updateStore } from "@/lib/local-store";
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, donationId } =
       await request.json();
+
+    if (LOCAL_MODE || !process.env.RAZORPAY_KEY_SECRET) {
+      let donation: Record<string, unknown> | null = null;
+      updateStore((store) => {
+        const index = store.donations.findIndex((item) => item._id === donationId);
+        if (index === -1) return;
+        store.donations[index] = touch({
+          ...store.donations[index],
+          status: "completed",
+          paymentId: razorpay_payment_id || `local_payment_${Date.now()}`,
+        });
+        donation = store.donations[index];
+      });
+
+      return NextResponse.json({
+        message: "Payment verified successfully",
+        donation,
+      });
+    }
+
+    await connectDB();
 
     // Verify signature
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -21,30 +21,25 @@ const registrationSchema = z.object({
 
 type RegistrationForm = z.infer<typeof registrationSchema>;
 
-// Sample event data
-const sampleEvent = {
-  _id: "1",
-  title: "Karthigai Deepam Festival 2025",
-  slug: "karthigai-deepam-2025",
-  description: "The grandest festival of Thiruvannamalai and one of the most sacred in the entire Shaiva tradition.",
-  longDescription: `Karthigai Deepam is the festival of divine light — the day on which Lord Shiva manifested as a column of infinite fire atop the Arunachala hill to show Brahma and Vishnu the nature of the Absolute.
-
-On this most sacred of days, a great lamp (Maha Deepam) is lit atop Arunachala and burns through the night, visible for miles around. Hundreds of thousands of pilgrims gather for the Girivalam — the sacred circumambulation of the holy hill.
-
-At Amma Ashram, the celebrations begin at dawn with Abhishekam and Homam. Throughout the day, special prayers, bhajans, and discourses are held. The Grand Annadhanam serves thousands of pilgrims.
-
-This is not merely a festival — it is a direct encounter with the Divine Light that is Lord Shiva.`,
-  date: new Date(Date.now() + 30 * 86400000).toISOString(),
-  time: "5:00 AM – 11:00 PM",
-  location: "Amma Ashram & Arunachala Hill, Thiruvannamalai",
-  category: "festival",
-  isFeatured: true,
-  maxAttendees: 500,
-  registeredCount: 143,
-};
+interface EventData {
+  _id: string;
+  title: string;
+  slug: string;
+  description: string;
+  longDescription?: string;
+  date: string;
+  time: string;
+  location: string;
+  category: string;
+  isFeatured?: boolean;
+  maxAttendees?: number;
+  registeredCount?: number;
+}
 
 export default function EventDetailPage() {
-  const params = useParams();
+  const params = useParams<{ slug: string }>();
+  const [event, setEvent] = useState<EventData | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -53,13 +48,21 @@ export default function EventDetailPage() {
     defaultValues: { numberOfAttendees: "1", country: "India" },
   });
 
+  useEffect(() => {
+    fetch(`/api/events/${params.slug}`)
+      .then((res) => res.json())
+      .then((data) => setEvent(data.event ?? null))
+      .catch(() => setEvent(null))
+      .finally(() => setPageLoading(false));
+  }, [params.slug]);
+
   const onSubmit = async (data: RegistrationForm) => {
     setLoading(true);
     try {
       const res = await fetch(`/api/events/${params.slug}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, numberOfAttendees: parseInt(data.numberOfAttendees) }),
+        body: JSON.stringify({ ...data, numberOfAttendees: parseInt(data.numberOfAttendees, 10) }),
       });
 
       if (!res.ok) {
@@ -68,6 +71,10 @@ export default function EventDetailPage() {
       }
 
       setSubmitted(true);
+      setEvent((prev) => prev ? {
+        ...prev,
+        registeredCount: (prev.registeredCount || 0) + parseInt(data.numberOfAttendees, 10),
+      } : prev);
       reset();
       toast.success("Registration successful! See you at the event.");
     } catch (error: unknown) {
@@ -78,16 +85,21 @@ export default function EventDetailPage() {
     }
   };
 
-  const event = sampleEvent;
-  const spotsLeft = event.maxAttendees ? event.maxAttendees - event.registeredCount : null;
+  if (pageLoading) {
+    return <div className="min-h-screen pt-24 px-4 text-center text-[#F5F5F5]/50">Loading event...</div>;
+  }
+
+  if (!event) {
+    return <div className="min-h-screen pt-24 px-4 text-center text-[#F5F5F5]/50">Event not found.</div>;
+  }
+
+  const spotsLeft = event.maxAttendees ? event.maxAttendees - (event.registeredCount || 0) : null;
 
   return (
     <div className="min-h-screen pt-24 pb-20 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Event detail — 2/3 */}
           <div className="lg:col-span-2">
-            {/* Category & title */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
               <span className="inline-block text-xs font-raleway uppercase tracking-widest bg-[#C17F4A]/15 text-[#C17F4A] px-3 py-1 rounded-full border border-[#C17F4A]/20 mb-4 capitalize">
                 {event.category}
@@ -102,7 +114,6 @@ export default function EventDetailPage() {
                 {event.title}
               </h1>
 
-              {/* Meta */}
               <div className="flex flex-wrap gap-6 mb-8 p-5 rounded-2xl bg-[#111] border border-[#D4A853]/15">
                 {[
                   { icon: "📅", label: new Date(event.date).toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) },
@@ -116,16 +127,14 @@ export default function EventDetailPage() {
                 ))}
               </div>
 
-              {/* Description */}
               <div className="prose-spiritual">
-                {event.longDescription.split("\n\n").map((para, i) => (
+                {(event.longDescription || event.description).split("\n\n").map((para, i) => (
                   <p key={i}>{para}</p>
                 ))}
               </div>
             </motion.div>
           </div>
 
-          {/* Registration form — 1/3 */}
           <div>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -146,7 +155,7 @@ export default function EventDetailPage() {
                   )}
 
                   <h2 className="font-cinzel text-[#D4A853] text-xl font-semibold mb-5">
-                    {submitted ? "You&apos;re Registered! 🙏" : "Register for this Event"}
+                    {submitted ? "You're Registered! 🙏" : "Register for this Event"}
                   </h2>
 
                   {submitted ? (
@@ -154,7 +163,6 @@ export default function EventDetailPage() {
                       <div className="text-5xl mb-4">🕉</div>
                       <p className="text-[#F5F5F5]/70 font-raleway text-sm leading-relaxed mb-4">
                         Your registration is confirmed. Amma blesses your attendance.
-                        Check your email for confirmation details.
                       </p>
                       <Button onClick={() => setSubmitted(false)} variant="outline" size="sm">
                         Register Another Person
@@ -166,14 +174,14 @@ export default function EventDetailPage() {
                       <FormField label="Email" id="email" type="email" placeholder="your@email.com" registration={register("email")} error={errors.email?.message} required />
                       <FormField label="Phone" id="phone" type="tel" placeholder="+91 98765 43210" registration={register("phone")} error={errors.phone?.message} required />
                       <FormField label="Number of Attendees" id="numberOfAttendees" as="select" registration={register("numberOfAttendees")} error={errors.numberOfAttendees?.message}>
-                        {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n}</option>)}
+                        {[1,2,3,4,5,6,7,8,9,10].map((n) => <option key={n} value={n}>{n}</option>)}
                       </FormField>
                       <FormField label="Country" id="country" as="select" registration={register("country")} error={errors.country?.message}>
-                        {["India", "United States", "United Kingdom", "Canada", "Australia", "Singapore", "UAE", "Malaysia", "Germany", "France", "Other"].map(c => <option key={c} value={c}>{c}</option>)}
+                        {["India", "United States", "United Kingdom", "Canada", "Australia", "Singapore", "UAE", "Malaysia", "Germany", "France", "Other"].map((c) => <option key={c} value={c}>{c}</option>)}
                       </FormField>
                       <FormField label="Special Requirements" id="specialRequirements" as="textarea" rows={2} placeholder="Any accessibility needs, dietary requirements..." registration={register("specialRequirements")} />
                       <Button type="submit" variant="primary" fullWidth loading={loading}>
-                        Register Now — It&apos;s Free
+                        Register Now - It's Free
                       </Button>
                     </form>
                   )}

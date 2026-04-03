@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { uploadImage } from "@/lib/cloudinary";
+import { LOCAL_MODE } from "@/lib/local-store";
 
 export async function POST(request: NextRequest) {
   const { error } = await requireAuth(request);
@@ -18,6 +19,13 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
+
+    if (LOCAL_MODE) {
+      return NextResponse.json({
+        url: base64,
+        publicId: `local-${Date.now()}`,
+      });
+    }
 
     const { url, publicId } = await uploadImage(base64, folder);
 

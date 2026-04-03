@@ -11,6 +11,9 @@
   --color-gold:      #D4A853;
   --color-terracotta:#C17F4A;
   --color-border:    #2A2A2A;
+  --font-cinzel: "Georgia", "Times New Roman", serif;
+  --font-raleway: "Trebuchet MS", "Helvetica Neue", sans-serif;
+  --font-noto-devanagari: "Noto Sans Devanagari", "Mangal", sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -161,3 +164,66 @@ body {
   50% { box-shadow: 0 0 40px rgba(212,168,83,0.5), 0 0 80px rgba(193,127,74,0.2); }
 }
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+.no-print {
+  display: block;
+}
+
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  body {
+    overflow: visible !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-page-wrap {
+    background: #ffffff !important;
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+
+  .print-sheet {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-grid-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .print-summary-stack {
+    display: flex !important;
+    align-items: flex-start !important;
+  }
+
+  .shipping-sheet {
+    max-width: 100% !important;
+  }
+
+  .invoice-sheet table,
+  .invoice-sheet tr,
+  .invoice-sheet td,
+  .invoice-sheet th {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}

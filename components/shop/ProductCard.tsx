@@ -2,19 +2,25 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-import type { Product } from "@/lib/shopData";
+import type { ShopProduct } from "@/lib/shop";
 
 interface ProductCardProps {
-  product: Product;
+  product: ShopProduct;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const [added, setAdded] = useState(false);
+  const [selectedSize, setSelectedSize] = useState(product.sizes[0] || "");
+  const [selectedVariation, setSelectedVariation] = useState(product.variations[0] || "");
 
   const handleAdd = () => {
-    addToCart(product);
+    addToCart(product, {
+      selectedSize,
+      selectedVariation,
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   };
@@ -53,9 +59,18 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Product image / emoji area */}
       <div className="relative h-52 bg-gradient-to-br from-[#222222] to-[#1A1A1A] flex items-center justify-center overflow-hidden">
-        <span className="text-7xl group-hover:scale-110 transition-transform duration-500 select-none">
-          {product.emoji}
-        </span>
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={product.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <span className="text-7xl group-hover:scale-110 transition-transform duration-500 select-none">
+            {product.emoji}
+          </span>
+        )}
         {/* Hover overlay with quick-add */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
           <button
@@ -77,7 +92,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Product name */}
         <h3 className="font-cinzel text-[#F5F5F5] text-sm font-semibold leading-snug mb-2 line-clamp-2 flex-1">
-          {product.name}
+          {product.title}
         </h3>
 
         {/* Short description */}
@@ -112,6 +127,34 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
         </div>
+
+        {product.sizes.length > 0 && (
+          <select
+            value={selectedSize}
+            onChange={(event) => setSelectedSize(event.target.value)}
+            className="input-spiritual rounded-xl px-3 py-2 text-xs mb-2"
+          >
+            {product.sizes.map((size) => (
+              <option key={size} value={size}>
+                {product.sizeLabel || "Size"}: {size}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {product.variations.length > 0 && (
+          <select
+            value={selectedVariation}
+            onChange={(event) => setSelectedVariation(event.target.value)}
+            className="input-spiritual rounded-xl px-3 py-2 text-xs mb-4"
+          >
+            {product.variations.map((variation) => (
+              <option key={variation} value={variation}>
+                {variation}
+              </option>
+            ))}
+          </select>
+        )}
 
         {/* Add to cart button */}
         <button

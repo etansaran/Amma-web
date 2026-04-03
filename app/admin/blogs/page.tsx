@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,25 +22,64 @@ const blogSchema = z.object({
 
 type BlogForm = z.infer<typeof blogSchema>;
 
-const sampleBlogs = [
-  { _id: "1", title: "The Fire of Arunachala", slug: "fire-of-arunachala", category: "teachings", isPublished: true, isFeatured: true, readTime: 8, views: 1247, createdAt: new Date(Date.now() - 5 * 86400000).toISOString() },
-  { _id: "2", title: "How Annadhanam Changed My Life", slug: "annadhanam-devotee-london", category: "devotees", isPublished: true, isFeatured: false, readTime: 6, views: 843, createdAt: new Date(Date.now() - 10 * 86400000).toISOString() },
-  { _id: "3", title: "Thiyanam — The Highest Teaching", slug: "thiyanam-silence", category: "teachings", isPublished: false, isFeatured: false, readTime: 7, views: 0, createdAt: new Date(Date.now() - 2 * 86400000).toISOString() },
-];
+interface Blog {
+  _id: string;
+  title: string;
+  slug: string;
+  category: string;
+  isPublished: boolean;
+  isFeatured: boolean;
+  readTime?: number;
+  views?: number;
+  createdAt: string;
+  excerpt?: string;
+  author?: string;
+}
 
 export default function AdminBlogsPage() {
-  const [blogs, setBlogs] = useState(sampleBlogs);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<BlogForm>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<BlogForm>({
     resolver: zodResolver(blogSchema),
     defaultValues: { category: "teachings", author: "Amma Ashram" },
   });
 
-  const onSubmit = async (data: BlogForm) => {
+  useEffect(() => {
+    const token = localStorage.getItem("admin_token");
     setLoading(true);
+    fetch("/api/blogs?admin=true&limit=100", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => setBlogs(data.blogs ?? []))
+      .catch(() => setError("Failed to load blogs"))
+      .finally(() => setLoading(false));
+  }, [refreshKey]);
+
+  const handleEdit = async (id: string) => {
+    const token = localStorage.getItem("admin_token");
+    try {
+      const res = await fetch(`/api/blogs/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      const blog = data.blog;
+      setValue("title", blog.title);
+      setValue("excerpt", blog.excerpt ?? "");
+      setValue("content", blog.content ?? "");
+      setValue("category", blog.category);
+      setValue("author", blog.author ?? "Amma Ashram");
+      setValue("isFeatured", blog.isFeatured);
+      setValue("isPublished", blog.isPublished);
+      setEditingId(id);
+      setShowForm(true);
+    } catch { toast.error("Failed to load blog"); }
+  };
+
+  const onSubmit = async (data: BlogForm) => {
+    setSubmitting(true);
     const token = localStorage.getItem("admin_token");
     try {
       const url = editingId ? `/api/blogs/${editingId}` : "/api/blogs";
@@ -53,8 +92,9 @@ export default function AdminBlogsPage() {
       if (!res.ok) throw new Error("Failed");
       toast.success(editingId ? "Blog updated" : "Blog created");
       setShowForm(false); setEditingId(null); reset();
+      setRefreshKey(k => k + 1);
     } catch { toast.error("Operation failed"); }
-    finally { setLoading(false); }
+    finally { setSubmitting(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -62,7 +102,7 @@ export default function AdminBlogsPage() {
     const token = localStorage.getItem("admin_token");
     try {
       await fetch(`/api/blogs/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-      setBlogs(prev => prev.filter(b => b._id !== id));
+      setRefreshKey(k => k + 1);
       toast.success("Blog deleted");
     } catch { toast.error("Delete failed"); }
   };
@@ -93,7 +133,7 @@ export default function AdminBlogsPage() {
               <FormField label="Excerpt" id="excerpt" as="textarea" rows={2} placeholder="Short description (shown in listing)" registration={register("excerpt")} error={errors.excerpt?.message} required />
             </div>
             <div className="sm:col-span-2">
-              <FormField label="Full Content" id="content" as="textarea" rows={8} placeholder="Full article content (supports basic markdown)" registration={register("content")} error={errors.content?.message} required />
+              <FormField label="Full Content" id="content" as="textarea" rows={8} placeholder="Full article content" registration={register("content")} error={errors.content?.message} required />
             </div>
             <FormField label="Category" id="category" as="select" registration={register("category")}>
               {["teachings","events","devotees","annadhanam","ashram-life","festivals"].map(c => (
@@ -110,7 +150,7 @@ export default function AdminBlogsPage() {
               </label>
             </div>
             <div className="sm:col-span-2">
-              <Button type="submit" variant="primary" loading={loading}>
+              <Button type="submit" variant="primary" loading={submitting}>
                 {editingId ? "Update Post" : "Publish Post"}
               </Button>
             </div>
@@ -118,45 +158,66 @@ export default function AdminBlogsPage() {
         </motion.div>
       )}
 
-      <div className="rounded-2xl border border-[#D4A853]/10 bg-[#111] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[#D4A853]/10">
-                {["Title", "Category", "Read Time", "Views", "Status", "Date", "Actions"].map(h => (
-                  <th key={h} className="text-left p-4 font-cinzel text-[#D4A853] text-xs font-semibold uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#D4A853]/5">
-              {blogs.map((blog) => (
-                <tr key={blog._id} className="hover:bg-[#D4A853]/3 transition-colors">
-                  <td className="p-4">
-                    <p className="text-[#F5F5F5]/80 text-sm font-raleway font-medium">{blog.title}</p>
-                    {blog.isFeatured && <span className="text-[#D4A853] text-xs">★ Featured</span>}
-                  </td>
-                  <td className="p-4">
-                    <span className="text-xs capitalize bg-[#C17F4A]/10 text-[#C17F4A] px-2 py-1 rounded-full font-raleway">{blog.category}</span>
-                  </td>
-                  <td className="p-4 text-[#F5F5F5]/50 text-sm font-raleway">{blog.readTime} min</td>
-                  <td className="p-4 text-[#F5F5F5]/50 text-sm font-raleway">{blog.views}</td>
-                  <td className="p-4">
-                    <span className={`text-xs px-2 py-1 rounded-full font-raleway ${blog.isPublished ? "text-green-400 bg-green-400/10" : "text-yellow-400 bg-yellow-400/10"}`}>
-                      {blog.isPublished ? "Published" : "Draft"}
-                    </span>
-                  </td>
-                  <td className="p-4 text-[#F5F5F5]/50 text-xs font-raleway">{formatDate(blog.createdAt)}</td>
-                  <td className="p-4">
-                    <div className="flex gap-2">
-                      <button onClick={() => { setEditingId(blog._id); setShowForm(true); }} className="text-[#D4A853]/60 hover:text-[#D4A853] text-xs font-raleway transition-colors">Edit</button>
-                      <button onClick={() => handleDelete(blog._id)} className="text-red-400/60 hover:text-red-400 text-xs font-raleway transition-colors">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {error && (
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 mb-6 text-center">
+          <p className="text-red-400 font-raleway text-sm mb-3">{error}</p>
+          <button onClick={() => { setError(null); setRefreshKey(k => k + 1); }}
+            className="text-[#D4A853] text-xs font-raleway hover:underline">Retry</button>
         </div>
+      )}
+
+      <div className="rounded-2xl border border-[#D4A853]/10 bg-[#111] overflow-hidden">
+        {loading ? (
+          <div className="p-6 space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-12 rounded-lg bg-[#D4A853]/5 animate-pulse" />
+            ))}
+          </div>
+        ) : blogs.length === 0 ? (
+          <div className="p-12 text-center">
+            <p className="text-4xl mb-3">📝</p>
+            <p className="text-[#F5F5F5]/40 font-raleway text-sm">No blog posts yet. Create your first post!</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#D4A853]/10">
+                  {["Title", "Category", "Read Time", "Views", "Status", "Date", "Actions"].map(h => (
+                    <th key={h} className="text-left p-4 font-cinzel text-[#D4A853] text-xs font-semibold uppercase tracking-wider">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#D4A853]/5">
+                {blogs.map((blog) => (
+                  <tr key={blog._id} className="hover:bg-[#D4A853]/3 transition-colors">
+                    <td className="p-4">
+                      <p className="text-[#F5F5F5]/80 text-sm font-raleway font-medium">{blog.title}</p>
+                      {blog.isFeatured && <span className="text-[#D4A853] text-xs">★ Featured</span>}
+                    </td>
+                    <td className="p-4">
+                      <span className="text-xs capitalize bg-[#C17F4A]/10 text-[#C17F4A] px-2 py-1 rounded-full font-raleway">{blog.category}</span>
+                    </td>
+                    <td className="p-4 text-[#F5F5F5]/50 text-sm font-raleway">{blog.readTime ?? "—"} min</td>
+                    <td className="p-4 text-[#F5F5F5]/50 text-sm font-raleway">{blog.views ?? 0}</td>
+                    <td className="p-4">
+                      <span className={`text-xs px-2 py-1 rounded-full font-raleway ${blog.isPublished ? "text-green-400 bg-green-400/10" : "text-yellow-400 bg-yellow-400/10"}`}>
+                        {blog.isPublished ? "Published" : "Draft"}
+                      </span>
+                    </td>
+                    <td className="p-4 text-[#F5F5F5]/50 text-xs font-raleway">{formatDate(blog.createdAt)}</td>
+                    <td className="p-4">
+                      <div className="flex gap-3">
+                        <button onClick={() => handleEdit(blog._id)} className="text-[#D4A853]/60 hover:text-[#D4A853] text-xs font-raleway transition-colors">Edit</button>
+                        <button onClick={() => handleDelete(blog._id)} className="text-red-400/60 hover:text-red-400 text-xs font-raleway transition-colors">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

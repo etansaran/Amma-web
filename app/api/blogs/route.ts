@@ -3,10 +3,10 @@ import { connectDB } from "@/lib/mongodb";
 import Blog from "@/models/Blog";
 import { requireAuth } from "@/lib/auth";
 import { slugify, calculateReadTime } from "@/utils/helpers";
+import { createLocalRecord, LOCAL_MODE, paginate, readStore, updateStore } from "@/lib/local-store";
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "9");
     const page = parseInt(searchParams.get("page") || "1");
@@ -14,6 +14,27 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get("featured");
     const admin = searchParams.get("admin");
 
+    if (LOCAL_MODE) {
+      const store = readStore();
+      let blogs = store.blogs.filter((blog) => (admin ? true : blog.isPublished));
+      if (category) blogs = blogs.filter((blog) => blog.category === category);
+      if (featured === "true") blogs = blogs.filter((blog) => blog.isFeatured);
+      blogs = blogs
+        .map((blog) => {
+          const { content, ...rest } = blog;
+          void content;
+          return rest;
+        })
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      const result = paginate(blogs, page, limit);
+
+      return NextResponse.json({
+        blogs: result.items,
+        pagination: result.pagination,
+      });
+    }
+
+    await connectDB();
     const query: Record<string, unknown> = admin ? {} : { isPublished: true };
     if (category) query.category = category;
     if (featured === "true") query.isFeatured = true;
@@ -40,14 +61,33 @@ export async function POST(request: NextRequest) {
   if (error) return error;
 
   try {
-    await connectDB();
     const body = await request.json();
 
     const slug = body.slug || slugify(body.title);
-    const existing = await Blog.findOne({ slug });
-    const finalSlug = existing ? `${slug}-${Date.now()}` : slug;
     const readTime = calculateReadTime(body.content);
 
+    if (LOCAL_MODE) {
+      const store = readStore();
+      const existing = store.blogs.find((blog) => blog.slug === slug);
+      const finalSlug = existing ? `${slug}-${Date.now()}` : slug;
+      const blog = createLocalRecord({
+        ...body,
+        slug: finalSlug,
+        readTime,
+        views: 0,
+        tags: body.tags || [],
+        isFeatured: Boolean(body.isFeatured),
+        isPublished: Boolean(body.isPublished),
+      });
+      updateStore((draft) => {
+        draft.blogs.unshift(blog);
+      });
+      return NextResponse.json({ blog }, { status: 201 });
+    }
+
+    await connectDB();
+    const existing = await Blog.findOne({ slug });
+    const finalSlug = existing ? `${slug}-${Date.now()}` : slug;
     const blog = await Blog.create({ ...body, slug: finalSlug, readTime });
     return NextResponse.json({ blog }, { status: 201 });
   } catch {

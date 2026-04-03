@@ -46,7 +46,6 @@ const EventSchema = new Schema<IEvent>(
 );
 
 EventSchema.index({ date: 1, isPublished: 1 });
-EventSchema.index({ slug: 1 });
 
 const Event: Model<IEvent> =
   mongoose.models.Event || mongoose.model<IEvent>("Event", EventSchema);

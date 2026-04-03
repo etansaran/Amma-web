@@ -1,28 +1,6 @@
 import type { Metadata } from "next";
-import { Cinzel, Raleway, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-
-const cinzel = Cinzel({
-  subsets: ["latin"],
-  variable: "--font-cinzel",
-  display: "swap",
-  weight: ["400", "500", "600", "700", "800", "900"],
-});
-
-const raleway = Raleway({
-  subsets: ["latin"],
-  variable: "--font-raleway",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const notoDevanagari = Noto_Sans_Devanagari({
-  subsets: ["devanagari"],
-  variable: "--font-noto-devanagari",
-  display: "swap",
-  weight: ["400", "500", "700"],
-});
 
 export const metadata: Metadata = {
   title: {
@@ -45,6 +23,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Siva Sri Thiyaneswar Amma Ashram" }],
   creator: "Siva Sri Thiyaneswar Amma Ashram",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -70,11 +49,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      data-theme="dark"
-      className={`${cinzel.variable} ${raleway.variable} ${notoDevanagari.variable}`}
-    >
+    <html lang="en" data-theme="dark">
       <body className="antialiased">
         {children}
         <Toaster

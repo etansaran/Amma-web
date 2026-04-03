@@ -12,6 +12,7 @@ node_modules/
 
 # Next.js
 .next/
+.next-build/
 out/
 build/
 
@@ -30,9 +31,13 @@ Thumbs.db
 # Editor
 .idea/
 .vscode/
+.claude/settings.local.json
 *.swp
 *.swo
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local app data
+.local-data/
