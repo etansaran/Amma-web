@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "./mongodb";
-import User, { IUser } from "@/models/User";
+import type { IUser } from "@/models/User";
 
 const JWT_EXPIRY = process.env.JWT_EXPIRY || "7d";
 const LOCAL_ADMIN_USER_ID = "local-admin";
@@ -67,8 +66,13 @@ export async function requireAuth(
       return { user: localAdmin, error: null };
     }
 
+    const [{ connectDB }, userModule] = await Promise.all([
+      import("./mongodb"),
+      import("@/models/User"),
+    ]);
+
     await connectDB();
-    const user = await User.findById(payload.userId).select("+password");
+    const user = await userModule.default.findById(payload.userId).select("+password");
 
     if (!user) {
       return {

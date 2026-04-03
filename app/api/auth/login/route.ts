@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import User from "@/models/User";
 import {
   createLocalAdminUser,
   DEFAULT_ADMIN_EMAIL,
@@ -66,9 +64,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const [{ connectDB }, userModule] = await Promise.all([
+      import("@/lib/mongodb"),
+      import("@/models/User"),
+    ]);
+
     await connectDB();
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await userModule.default.findOne({ email }).select("+password");
 
     if (!user || !(await user.comparePassword(password))) {
       return NextResponse.json(
