@@ -3,12 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "./mongodb";
 import User, { IUser } from "@/models/User";
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRY = process.env.JWT_EXPIRY || "7d";
-
-if (!JWT_SECRET) {
-  throw new Error("Please define JWT_SECRET in .env.local");
-}
 
 interface JWTPayload {
   userId: string;
@@ -19,10 +15,12 @@ interface JWTPayload {
 }
 
 export function signToken(payload: Omit<JWTPayload, "iat" | "exp">): string {
+  if (!JWT_SECRET) throw new Error("Please define JWT_SECRET in .env.local");
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRY } as jwt.SignOptions);
 }
 
 export function verifyToken(token: string): JWTPayload {
+  if (!JWT_SECRET) throw new Error("Please define JWT_SECRET in .env.local");
   return jwt.verify(token, JWT_SECRET) as JWTPayload;
 }
 
