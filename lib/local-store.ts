@@ -7,6 +7,7 @@ export const LOCAL_MODE = !process.env.MONGODB_URI;
 
 const storeDir = path.join(process.cwd(), ".local-data");
 const storeFile = path.join(storeDir, "store.json");
+let memoryStore: Store | null = null;
 
 type Store = {
   blogs: Record<string, any>[];
@@ -167,42 +168,57 @@ function seedStore(): Store {
 }
 
 export function readStore(): Store {
-  if (!fs.existsSync(storeDir)) {
-    fs.mkdirSync(storeDir, { recursive: true });
-  }
-
-  if (!fs.existsSync(storeFile)) {
-    const seeded = seedStore();
-    fs.writeFileSync(storeFile, JSON.stringify(seeded, null, 2), "utf8");
-    return seeded;
-  }
-
-  const stored = JSON.parse(fs.readFileSync(storeFile, "utf8")) as Partial<Store>;
   const seeded = seedStore();
-  const merged: Store = {
-    ...seeded,
-    ...stored,
-    settings: {
-      ...seeded.settings,
-      ...(stored.settings || {}),
-    },
-    shopProducts: stored.shopProducts && stored.shopProducts.length > 0 ? stored.shopProducts : seeded.shopProducts,
-    shopOrders: stored.shopOrders || [],
-  };
 
-  if (!stored.shopProducts || !stored.shopOrders) {
-    writeStore(merged);
+  try {
+    if (!fs.existsSync(storeDir)) {
+      fs.mkdirSync(storeDir, { recursive: true });
+    }
+
+    if (!fs.existsSync(storeFile)) {
+      fs.writeFileSync(storeFile, JSON.stringify(seeded, null, 2), "utf8");
+      memoryStore = seeded;
+      return seeded;
+    }
+
+    const stored = JSON.parse(fs.readFileSync(storeFile, "utf8")) as Partial<Store>;
+    const merged: Store = {
+      ...seeded,
+      ...stored,
+      settings: {
+        ...seeded.settings,
+        ...(stored.settings || {}),
+      },
+      shopProducts: stored.shopProducts && stored.shopProducts.length > 0 ? stored.shopProducts : seeded.shopProducts,
+      shopOrders: stored.shopOrders || [],
+    };
+
+    if (!stored.shopProducts || !stored.shopOrders) {
+      writeStore(merged);
+    }
+
+    memoryStore = merged;
+    return merged;
+  } catch {
+    if (!memoryStore) {
+      memoryStore = seeded;
+    }
+    return memoryStore;
   }
-
-  return merged;
 }
 
 export function writeStore(store: Store) {
-  if (!fs.existsSync(storeDir)) {
-    fs.mkdirSync(storeDir, { recursive: true });
-  }
+  memoryStore = store;
 
-  fs.writeFileSync(storeFile, JSON.stringify(store, null, 2), "utf8");
+  try {
+    if (!fs.existsSync(storeDir)) {
+      fs.mkdirSync(storeDir, { recursive: true });
+    }
+
+    fs.writeFileSync(storeFile, JSON.stringify(store, null, 2), "utf8");
+  } catch {
+    // On serverless hosts the filesystem may be read-only; keep data in memory for the request lifecycle.
+  }
 }
 
 export function updateStore<T>(updater: (store: Store) => T): T {
