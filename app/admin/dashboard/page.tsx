@@ -108,6 +108,14 @@ export default function DashboardPage() {
     { label: "Shop Orders", value: stats.shopOrders.toString(), icon: "📦", sub: `${stats.shopPaymentPending} payment pending`, color: "#D4A853", href: "/admin/shop-orders" },
   ];
 
+  const chartData = [
+    { label: "Donations", value: stats.totalDonations, color: "bg-[#D4A853]" },
+    { label: "Appointments", value: stats.pendingAppointments, color: "bg-[#C17F4A]" },
+    { label: "Messages", value: stats.unreadMessages, color: "bg-[#8B6914]" },
+    { label: "Orders", value: stats.shopOrders, color: "bg-green-500/80" },
+  ];
+  const chartMax = Math.max(...chartData.map((item) => item.value), 1);
+
   const quickActions = [
     { label: "New Event", href: "/admin/events", icon: "🎉" },
     { label: "New Blog Post", href: "/admin/blogs", icon: "📝" },
@@ -216,6 +224,29 @@ export default function DashboardPage() {
               ))
             )}
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-[#D4A853]/10 bg-[#111] p-5 mb-8">
+        <div className="flex items-center justify-between gap-3 mb-5">
+          <h2 className="font-cinzel text-[#D4A853] font-semibold">Operations Snapshot</h2>
+          <p className="text-[#F5F5F5]/30 text-xs">Live from current admin data</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {chartData.map((item) => (
+            <div key={item.label} className="rounded-xl border border-[#D4A853]/10 bg-[#0D0D0D] p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[#F5F5F5]/55 text-sm">{item.label}</p>
+                <p className="text-[#D4A853] font-semibold">{item.value}</p>
+              </div>
+              <div className="h-2 rounded-full bg-[#1a1a1a] overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${item.color}`}
+                  style={{ width: `${Math.max(12, (item.value / chartMax) * 100)}%` }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

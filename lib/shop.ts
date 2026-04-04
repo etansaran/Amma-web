@@ -42,6 +42,12 @@ export interface ShopOrderItem {
   emoji?: string;
 }
 
+export interface ShopOrderTimelineItem {
+  label: string;
+  detail?: string;
+  timestamp: string;
+}
+
 export interface ShopOrder {
   _id: string;
   orderNumber: string;
@@ -63,6 +69,9 @@ export interface ShopOrder {
   paymentStatus: "pending" | "paid" | "failed";
   orderStatus: "new" | "processing" | "shipped" | "delivered" | "cancelled";
   customerMessage?: string;
+  couponCode?: string;
+  discountAmount?: number;
+  trackingTimeline?: ShopOrderTimelineItem[];
   createdAt: string;
   updatedAt: string;
 }

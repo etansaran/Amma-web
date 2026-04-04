@@ -39,9 +39,16 @@ export default function CartSidebar() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [orderSuccess, setOrderSuccess] = useState<{ orderNumber: string; totalAmount: number; message: string } | null>(null);
+  const [couponCode, setCouponCode] = useState("");
 
-  const shippingFee = useMemo(() => (totalPrice >= 999 ? 0 : 99), [totalPrice]);
-  const grandTotal = totalPrice + shippingFee;
+  const discountAmount = useMemo(() => {
+    const normalized = couponCode.trim().toUpperCase();
+    if (normalized === "AMMA10") return Math.min(Math.round(totalPrice * 0.1), 300);
+    if (normalized === "SEVA100" && totalPrice >= 1000) return 100;
+    return 0;
+  }, [couponCode, totalPrice]);
+  const shippingFee = useMemo(() => ((totalPrice - discountAmount) >= 999 ? 0 : 99), [discountAmount, totalPrice]);
+  const grandTotal = totalPrice - discountAmount + shippingFee;
 
   const setField = (field: keyof CheckoutForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -68,6 +75,7 @@ export default function CartSidebar() {
             selectedSize: item.selectedSize,
             selectedVariation: item.selectedVariation,
           })),
+          couponCode,
         }),
       });
       const data = await response.json();
@@ -79,6 +87,7 @@ export default function CartSidebar() {
         message: data.message || "Order placed successfully.",
       });
       clearCart();
+      setCouponCode("");
       setShowCheckout(false);
       setForm(initialForm);
     } catch (checkoutError) {
@@ -234,11 +243,23 @@ export default function CartSidebar() {
                       </div>
                       <div className="rounded-xl border border-[#D4A853]/10 bg-[#111] p-4">
                         <p className="text-[#D4A853] text-sm font-medium mb-3">Order summary</p>
+                        <input
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          placeholder="Coupon code (try AMMA10)"
+                          className="input-spiritual rounded-xl px-4 py-3 text-sm w-full mb-3"
+                        />
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between text-[#F5F5F5]/60">
                             <span>Subtotal</span>
                             <span>₹{totalPrice.toLocaleString("en-IN")}</span>
                           </div>
+                          {discountAmount > 0 && (
+                            <div className="flex justify-between text-green-300/80">
+                              <span>Discount</span>
+                              <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
+                            </div>
+                          )}
                           <div className="flex justify-between text-[#F5F5F5]/60">
                             <span>Shipping</span>
                             <span>{shippingFee === 0 ? "Free" : `₹${shippingFee}`}</span>
@@ -267,6 +288,12 @@ export default function CartSidebar() {
                   <span>Shipping</span>
                   <span>{shippingFee === 0 ? "Free" : `₹${shippingFee}`}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between items-center text-green-300/80 text-xs">
+                    <span>Discount</span>
+                    <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
                 {error && <p className="text-red-400 text-xs">{error}</p>}
 
                 {showCheckout ? (

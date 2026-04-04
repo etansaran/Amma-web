@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
           ...store.donations[index],
           status: "completed",
           paymentId: razorpay_payment_id || `local_payment_${Date.now()}`,
+          receiptUrl: `/admin/donations/${donationId}/receipt`,
         });
         donation = store.donations[index];
       });
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
       {
         status: "completed",
         paymentId: razorpay_payment_id,
+        receiptUrl: `/admin/donations/${donationId}/receipt`,
       },
       { new: true }
     );

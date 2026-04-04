@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import type { IUser } from "@/models/User";
+import { getLocalAdminAccount, LOCAL_ADMIN_ID } from "@/lib/local-store";
 
 const JWT_EXPIRY = process.env.JWT_EXPIRY || "7d";
-const LOCAL_ADMIN_USER_ID = "local-admin";
 const DEFAULT_ADMIN_EMAIL = "admin@amma.org";
 const DEFAULT_ADMIN_PASSWORD = "admin";
 
@@ -55,12 +55,13 @@ export async function requireAuth(
   try {
     const payload = verifyToken(token);
 
-    if (payload.userId === LOCAL_ADMIN_USER_ID && isLocalAdminEnabled()) {
+    if (payload.userId === LOCAL_ADMIN_ID && isLocalAdminEnabled()) {
+      const account = getLocalAdminAccount();
       const localAdmin = {
-        _id: LOCAL_ADMIN_USER_ID,
-        name: "Local Admin",
-        email: process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL,
-        role: "superadmin",
+        _id: LOCAL_ADMIN_ID,
+        name: account.name || "Local Admin",
+        email: account.email || process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL,
+        role: account.role || "superadmin",
       } as unknown as IUser;
 
       return { user: localAdmin, error: null };
@@ -95,16 +96,34 @@ export function isLocalAdminEnabled(): boolean {
 }
 
 export function createLocalAdminUser() {
+  const account = getLocalAdminAccount();
   return {
-    _id: LOCAL_ADMIN_USER_ID,
-    name: "Local Admin",
-    email: process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL,
-    role: "superadmin",
+    _id: LOCAL_ADMIN_ID,
+    name: account.name || "Local Admin",
+    email: account.email || process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL,
+    role: account.role || "superadmin",
   };
 }
 
-export { LOCAL_ADMIN_USER_ID };
+export { LOCAL_ADMIN_ID as LOCAL_ADMIN_USER_ID };
 export { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD };
+
+export async function requireRole(
+  request: NextRequest,
+  allowedRoles: Array<"admin" | "superadmin">
+) {
+  const auth = await requireAuth(request);
+  if (auth.error) return auth;
+
+  if (!allowedRoles.includes(auth.user.role as "admin" | "superadmin")) {
+    return {
+      user: null,
+      error: NextResponse.json({ error: "You do not have permission to perform this action" }, { status: 403 }),
+    };
+  }
+
+  return auth;
+}
 
 export function setAuthCookie(response: NextResponse, token: string): NextResponse {
   response.cookies.set("admin_token", token, {

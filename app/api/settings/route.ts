@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import SiteSettings from "@/models/SiteSettings";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { LOCAL_MODE, readStore, updateStore } from "@/lib/local-store";
 
 const defaults = {
@@ -16,7 +16,7 @@ const defaults = {
 };
 
 export async function GET(request: NextRequest) {
-  const { error } = await requireAuth(request);
+  const { error } = await requireRole(request, ["superadmin"]);
   if (error) return error;
 
   try {
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const { error } = await requireAuth(request);
+  const { error } = await requireRole(request, ["superadmin"]);
   if (error) return error;
 
   try {

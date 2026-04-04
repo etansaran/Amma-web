@@ -6,6 +6,10 @@ import { convertToINR } from "@/utils/helpers";
 import { createLocalRecord, LOCAL_MODE, updateStore } from "@/lib/local-store";
 import { checkRateLimit } from "@/lib/rate-limit";
 
+function createReceiptNumber() {
+  return `DON-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const rateLimit = checkRateLimit(request, "donations-create-order", 10, 60_000);
@@ -56,6 +60,8 @@ export async function POST(request: NextRequest) {
         paymentGateway: "local",
         status: "completed",
         paymentId: `local_payment_${Date.now()}`,
+        receiptNumber: createReceiptNumber(),
+        receiptUrl: "",
       });
 
       updateStore((store) => {
@@ -102,6 +108,7 @@ export async function POST(request: NextRequest) {
       orderId: order.id,
       paymentGateway: "razorpay",
       status: "pending",
+      receiptNumber: createReceiptNumber(),
     });
 
     return NextResponse.json({

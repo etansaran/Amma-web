@@ -9,6 +9,18 @@ import {
   setAuthCookie,
 } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getLocalAdminAccount, recordLoginHistory } from "@/lib/local-store";
+
+function getRequestMeta(request: NextRequest) {
+  return {
+    ipAddress:
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown",
+    userAgent: request.headers.get("user-agent") || "unknown",
+    timestamp: new Date().toISOString(),
+  };
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,11 +42,18 @@ export async function POST(request: NextRequest) {
     }
 
     if (isLocalAdminEnabled()) {
-      const localEmail = process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
-      const localPassword = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+      const account = getLocalAdminAccount();
+      const localEmail = account.email || process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
+      const localPassword = account.password || process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
 
       if (email === localEmail && password === localPassword) {
         const localUser = createLocalAdminUser();
+        recordLoginHistory({
+          email,
+          status: "success",
+          mode: "local",
+          ...getRequestMeta(request),
+        });
         const token = signToken({
           userId: LOCAL_ADMIN_USER_ID,
           email: localUser.email,
@@ -58,6 +77,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.MONGODB_URI) {
+      recordLoginHistory({
+        email,
+        status: "failed",
+        mode: "local",
+        ...getRequestMeta(request),
+      });
       return NextResponse.json(
         { error: "Invalid email or password" },
         { status: 401 }
@@ -74,6 +99,12 @@ export async function POST(request: NextRequest) {
     const user = await userModule.default.findOne({ email }).select("+password");
 
     if (!user || !(await user.comparePassword(password))) {
+      recordLoginHistory({
+        email,
+        status: "failed",
+        mode: "database",
+        ...getRequestMeta(request),
+      });
       return NextResponse.json(
         { error: "Invalid email or password" },
         { status: 401 }
@@ -84,6 +115,13 @@ export async function POST(request: NextRequest) {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
+    });
+
+    recordLoginHistory({
+      email: user.email,
+      status: "success",
+      mode: "database",
+      ...getRequestMeta(request),
     });
 
     const response = NextResponse.json({

@@ -18,6 +18,18 @@ function getStats(orders: Array<Record<string, any>>) {
   };
 }
 
+function getCouponDiscount(code: string, subtotal: number) {
+  const normalized = String(code || "").trim().toUpperCase();
+  if (!normalized) return { couponCode: "", discountAmount: 0 };
+  if (normalized === "AMMA10") {
+    return { couponCode: normalized, discountAmount: Math.min(Math.round(subtotal * 0.1), 300) };
+  }
+  if (normalized === "SEVA100" && subtotal >= 1000) {
+    return { couponCode: normalized, discountAmount: 100 };
+  }
+  return { couponCode: "", discountAmount: 0 };
+}
+
 export async function GET(request: NextRequest) {
   const { error } = await requireAuth(request);
   if (error) return error;
@@ -30,6 +42,7 @@ export async function GET(request: NextRequest) {
     const paymentStatus = searchParams.get("paymentStatus");
     const orderStatus = searchParams.get("orderStatus");
     const email = searchParams.get("email");
+    const search = searchParams.get("search")?.toLowerCase().trim();
 
     if (LOCAL_MODE) {
       const store = readStore();
@@ -37,6 +50,14 @@ export async function GET(request: NextRequest) {
       if (paymentStatus) orders = orders.filter((item) => item.paymentStatus === paymentStatus);
       if (orderStatus) orders = orders.filter((item) => item.orderStatus === orderStatus);
       if (email) orders = orders.filter((item) => item.email === email);
+      if (search) {
+        orders = orders.filter((item) =>
+          [item.orderNumber, item.customerName, item.email, item.phone, item.city]
+            .join(" ")
+            .toLowerCase()
+            .includes(search)
+        );
+      }
       orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       const result = paginate(orders, page, limit);
       return NextResponse.json({ orders: result.items, pagination: result.pagination, stats: getStats(store.shopOrders) });
@@ -47,6 +68,15 @@ export async function GET(request: NextRequest) {
     if (paymentStatus) query.paymentStatus = paymentStatus;
     if (orderStatus) query.orderStatus = orderStatus;
     if (email) query.email = email;
+    if (search) {
+      query.$or = [
+        { orderNumber: { $regex: search, $options: "i" } },
+        { customerName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
+        { city: { $regex: search, $options: "i" } },
+      ];
+    }
     const total = await ShopOrder.countDocuments(query);
     const orders = await ShopOrder.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean();
     const statsRows = await ShopOrder.find({}).lean();
@@ -99,7 +129,8 @@ export async function POST(request: NextRequest) {
         };
       });
       const subtotal = enrichedItems.reduce((sum: number, item: Record<string, any>) => sum + item.price * item.quantity, 0);
-      const shippingFee = calculateShipping(subtotal);
+      const { couponCode, discountAmount } = getCouponDiscount(body.couponCode, subtotal);
+      const shippingFee = calculateShipping(Math.max(0, subtotal - discountAmount));
       const order = createLocalRecord({
         orderNumber: formatOrderNumber(store.shopOrders.length + 1),
         customerName: body.customerName,
@@ -114,14 +145,23 @@ export async function POST(request: NextRequest) {
         notes: body.notes || "",
         items: enrichedItems,
         subtotal,
+        couponCode,
+        discountAmount,
         shippingFee,
-        totalAmount: subtotal + shippingFee,
+        totalAmount: subtotal - discountAmount + shippingFee,
         paymentMethod: body.paymentMethod === "cash-on-delivery" ? "cash-on-delivery" : "upi-transfer",
         paymentStatus: "pending",
         orderStatus: "new",
         customerMessage: body.paymentMethod === "cash-on-delivery"
           ? "Order received. Please keep cash ready at delivery."
           : "Order received. Our team will verify your payment and start processing shortly.",
+        trackingTimeline: [
+          {
+            label: "Order placed",
+            detail: "Customer checkout completed",
+            timestamp: new Date().toISOString(),
+          },
+        ],
       });
 
       updateStore((draft) => {
@@ -169,7 +209,8 @@ export async function POST(request: NextRequest) {
       };
     });
     const subtotal = enrichedItems.reduce((sum: number, item: Record<string, any>) => sum + item.price * item.quantity, 0);
-    const shippingFee = calculateShipping(subtotal);
+    const { couponCode, discountAmount } = getCouponDiscount(body.couponCode, subtotal);
+    const shippingFee = calculateShipping(Math.max(0, subtotal - discountAmount));
     const count = await ShopOrder.countDocuments();
     const order = await ShopOrder.create({
       orderNumber: formatOrderNumber(count + 1),
@@ -185,14 +226,23 @@ export async function POST(request: NextRequest) {
       notes: body.notes || "",
       items: enrichedItems,
       subtotal,
+      couponCode,
+      discountAmount,
       shippingFee,
-      totalAmount: subtotal + shippingFee,
+      totalAmount: subtotal - discountAmount + shippingFee,
       paymentMethod: body.paymentMethod === "cash-on-delivery" ? "cash-on-delivery" : "upi-transfer",
       paymentStatus: "pending",
       orderStatus: "new",
       customerMessage: body.paymentMethod === "cash-on-delivery"
         ? "Order received. Please keep cash ready at delivery."
         : "Order received. Our team will verify your payment and start processing shortly.",
+      trackingTimeline: [
+        {
+          label: "Order placed",
+          detail: "Customer checkout completed",
+          timestamp: new Date().toISOString(),
+        },
+      ],
     });
     await Promise.all(enrichedItems.map((item: Record<string, any>) =>
       ShopProduct.findByIdAndUpdate(item.productId, {

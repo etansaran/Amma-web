@@ -14,6 +14,15 @@ const OrderItemSchema = new Schema(
   { _id: false }
 );
 
+const TimelineItemSchema = new Schema(
+  {
+    label: { type: String, required: true },
+    detail: { type: String, default: "" },
+    timestamp: { type: String, required: true },
+  },
+  { _id: false }
+);
+
 const ShopOrderSchema = new Schema(
   {
     orderNumber: { type: String, required: true, unique: true },
@@ -31,6 +40,8 @@ const ShopOrderSchema = new Schema(
     subtotal: { type: Number, required: true, min: 0 },
     shippingFee: { type: Number, required: true, min: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
+    couponCode: { type: String, default: "" },
+    discountAmount: { type: Number, default: 0, min: 0 },
     paymentMethod: {
       type: String,
       enum: ["cash-on-delivery", "upi-transfer"],
@@ -47,6 +58,7 @@ const ShopOrderSchema = new Schema(
       default: "new",
     },
     customerMessage: { type: String, default: "" },
+    trackingTimeline: { type: [TimelineItemSchema], default: [] },
   },
   { timestamps: true }
 );

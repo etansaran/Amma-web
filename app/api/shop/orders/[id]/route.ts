@@ -40,11 +40,29 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       updateStore((store) => {
         store.shopOrders = store.shopOrders.map((item) => {
           if (item._id !== id) return item;
+          const nextPaymentStatus = body.paymentStatus || item.paymentStatus;
+          const nextOrderStatus = body.orderStatus || item.orderStatus;
+          const timeline = Array.isArray(item.trackingTimeline) ? [...item.trackingTimeline] : [];
+          if (body.paymentStatus && body.paymentStatus !== item.paymentStatus) {
+            timeline.unshift({
+              label: `Payment ${body.paymentStatus}`,
+              detail: `Updated by admin`,
+              timestamp: new Date().toISOString(),
+            });
+          }
+          if (body.orderStatus && body.orderStatus !== item.orderStatus) {
+            timeline.unshift({
+              label: `Order ${body.orderStatus}`,
+              detail: body.statusNote || "Updated by admin",
+              timestamp: new Date().toISOString(),
+            });
+          }
           updated = touch({
             ...item,
-            paymentStatus: body.paymentStatus || item.paymentStatus,
-            orderStatus: body.orderStatus || item.orderStatus,
+            paymentStatus: nextPaymentStatus,
+            orderStatus: nextOrderStatus,
             notes: body.notes ?? item.notes,
+            trackingTimeline: timeline,
           });
           return updated;
         });
@@ -60,6 +78,31 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         ...(body.paymentStatus ? { paymentStatus: body.paymentStatus } : {}),
         ...(body.orderStatus ? { orderStatus: body.orderStatus } : {}),
         ...(body.notes !== undefined ? { notes: body.notes } : {}),
+        ...(body.paymentStatus || body.orderStatus
+          ? {
+              $push: {
+                trackingTimeline: {
+                  $each: [
+                    ...(body.paymentStatus
+                      ? [{
+                          label: `Payment ${body.paymentStatus}`,
+                          detail: "Updated by admin",
+                          timestamp: new Date().toISOString(),
+                        }]
+                      : []),
+                    ...(body.orderStatus
+                      ? [{
+                          label: `Order ${body.orderStatus}`,
+                          detail: body.statusNote || "Updated by admin",
+                          timestamp: new Date().toISOString(),
+                        }]
+                      : []),
+                  ],
+                  $position: 0,
+                },
+              },
+            }
+          : {}),
       },
       { new: true }
     ).lean();

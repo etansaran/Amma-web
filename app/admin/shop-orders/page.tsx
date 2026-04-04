@@ -22,12 +22,20 @@ export default function AdminShopOrdersPage() {
     totalRevenue: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState("all");
+  const [orderFilter, setOrderFilter] = useState("all");
+  const [statusNote, setStatusNote] = useState("");
 
   const loadOrders = async () => {
     const token = localStorage.getItem("admin_token");
     setLoading(true);
     try {
-      const response = await fetch("/api/shop/orders?admin=true&limit=100", {
+      const params = new URLSearchParams({ admin: "true", limit: "100" });
+      if (search) params.set("search", search);
+      if (paymentFilter !== "all") params.set("paymentStatus", paymentFilter);
+      if (orderFilter !== "all") params.set("orderStatus", orderFilter);
+      const response = await fetch(`/api/shop/orders?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -46,9 +54,9 @@ export default function AdminShopOrdersPage() {
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [search, paymentFilter, orderFilter]);
 
-  const updateOrder = async (id: string, payload: Partial<ShopOrder>) => {
+  const updateOrder = async (id: string, payload: Partial<ShopOrder> & { statusNote?: string }) => {
     const token = localStorage.getItem("admin_token");
     try {
       const response = await fetch(`/api/shop/orders/${id}`, {
@@ -74,11 +82,60 @@ export default function AdminShopOrdersPage() {
     { label: "Revenue", value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`, icon: "💰" },
   ];
 
+  const exportCsv = () => {
+    const rows = [
+      ["Order Number", "Customer", "Email", "Phone", "Payment Status", "Order Status", "Total", "Date"],
+      ...orders.map((order) => [
+        order.orderNumber,
+        order.customerName,
+        order.email,
+        order.phone,
+        order.paymentStatus,
+        order.orderStatus,
+        order.totalAmount,
+        order.createdAt,
+      ]),
+    ];
+    const csv = rows.map((row) => row.map((item) => `"${String(item ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "amma-shop-orders.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-8 flex flex-col gap-4">
         <h1 className="font-cinzel text-3xl font-bold text-[#D4A853]">Shop Orders</h1>
         <p className="text-[#F5F5F5]/40 font-raleway text-sm">Track orders, payments, and shipping addresses</p>
+        <div className="flex flex-col xl:flex-row gap-3">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search order, customer, email, phone..."
+            className="input-spiritual rounded-full px-4 py-2.5 text-sm xl:min-w-[300px]"
+          />
+          <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)} className="input-spiritual rounded-full px-4 py-2.5 text-sm">
+            <option value="all">All Payments</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="failed">Failed</option>
+          </select>
+          <select value={orderFilter} onChange={(e) => setOrderFilter(e.target.value)} className="input-spiritual rounded-full px-4 py-2.5 text-sm">
+            <option value="all">All Delivery Status</option>
+            <option value="new">New</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button type="button" onClick={exportCsv} className="px-4 py-2.5 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-sm font-medium">
+            Export CSV
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
@@ -156,7 +213,7 @@ export default function AdminShopOrdersPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <select
                   value={selectedOrder.paymentStatus}
-                  onChange={(e) => updateOrder(selectedOrder._id, { paymentStatus: e.target.value as ShopOrder["paymentStatus"] })}
+                  onChange={(e) => updateOrder(selectedOrder._id, { paymentStatus: e.target.value as ShopOrder["paymentStatus"], statusNote })}
                   className="input-spiritual rounded-xl px-4 py-3 text-sm"
                 >
                   <option value="pending">Payment Pending</option>
@@ -165,7 +222,7 @@ export default function AdminShopOrdersPage() {
                 </select>
                 <select
                   value={selectedOrder.orderStatus}
-                  onChange={(e) => updateOrder(selectedOrder._id, { orderStatus: e.target.value as ShopOrder["orderStatus"] })}
+                  onChange={(e) => updateOrder(selectedOrder._id, { orderStatus: e.target.value as ShopOrder["orderStatus"], statusNote })}
                   className="input-spiritual rounded-xl px-4 py-3 text-sm"
                 >
                   <option value="new">New</option>
@@ -175,6 +232,14 @@ export default function AdminShopOrdersPage() {
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
+
+              <textarea
+                value={statusNote}
+                onChange={(e) => setStatusNote(e.target.value)}
+                rows={2}
+                className="w-full rounded-xl bg-[#0D0D0D] border border-[#D4A853]/10 px-4 py-3 text-sm text-[#F5F5F5]/80"
+                placeholder="Optional internal update note for the delivery timeline"
+              />
 
               <div className="rounded-xl border border-[#D4A853]/10 bg-[#0D0D0D] p-4">
                 <p className="text-[#D4A853] text-sm font-medium mb-2">Shipping address</p>
@@ -214,11 +279,40 @@ export default function AdminShopOrdersPage() {
                 </div>
               )}
 
+              <div className="rounded-xl border border-[#D4A853]/10 bg-[#0D0D0D] p-4">
+                <p className="text-[#D4A853] text-sm font-medium mb-3">Delivery timeline</p>
+                <div className="space-y-3">
+                  {(selectedOrder.trackingTimeline ?? []).length === 0 ? (
+                    <p className="text-sm text-[#F5F5F5]/35">Timeline will appear as the order progresses.</p>
+                  ) : (
+                    (selectedOrder.trackingTimeline ?? []).map((entry, index) => (
+                      <div key={`${entry.timestamp}-${index}`} className="flex gap-3">
+                        <div className="flex flex-col items-center">
+                          <div className="w-3 h-3 rounded-full bg-[#D4A853]" />
+                          {index !== (selectedOrder.trackingTimeline ?? []).length - 1 ? <div className="w-px flex-1 bg-[#D4A853]/20" /> : null}
+                        </div>
+                        <div className="pb-3">
+                          <p className="text-sm text-[#F5F5F5]/80">{entry.label}</p>
+                          {entry.detail ? <p className="text-xs text-[#F5F5F5]/35 mt-1">{entry.detail}</p> : null}
+                          <p className="text-xs text-[#D4A853]/70 mt-1">{new Date(entry.timestamp).toLocaleString("en-IN")}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-[#F5F5F5]/50">
                   <span>Subtotal</span>
                   <span>₹{selectedOrder.subtotal.toLocaleString("en-IN")}</span>
                 </div>
+                {(selectedOrder.discountAmount ?? 0) > 0 && (
+                  <div className="flex justify-between text-green-300/80">
+                    <span>Discount {selectedOrder.couponCode ? `(${selectedOrder.couponCode})` : ""}</span>
+                    <span>-₹{Number(selectedOrder.discountAmount || 0).toLocaleString("en-IN")}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-[#F5F5F5]/50">
                   <span>Shipping</span>
                   <span>{selectedOrder.shippingFee === 0 ? "Free" : `₹${selectedOrder.shippingFee}`}</span>

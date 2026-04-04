@@ -15,6 +15,7 @@ export interface IDonation extends Document {
   paymentId?: string;
   orderId?: string;
   status: "pending" | "completed" | "failed" | "refunded";
+  receiptNumber?: string;
   receiptUrl?: string;
   panCard?: string;
   createdAt: Date;
@@ -57,6 +58,7 @@ const DonationSchema = new Schema<IDonation>(
       enum: ["pending", "completed", "failed", "refunded"],
       default: "pending",
     },
+    receiptNumber: { type: String },
     receiptUrl: { type: String },
     panCard: { type: String },
   },

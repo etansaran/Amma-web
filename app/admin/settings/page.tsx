@@ -26,6 +26,13 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("admin@amma.org");
+  const [resetCode, setResetCode] = useState("");
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [securityLoading, setSecurityLoading] = useState(false);
+  const [history, setHistory] = useState<Array<Record<string, any>>>([]);
 
   const {
     register,
@@ -62,6 +69,11 @@ export default function AdminSettingsPage() {
 
         const data = await res.json();
         reset(data.settings);
+        const historyRes = await fetch("/api/auth/login-history?limit=8", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const historyJson = await historyRes.json();
+        setHistory(historyJson.history ?? []);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to load settings";
         setError(message);
@@ -103,6 +115,55 @@ export default function AdminSettingsPage() {
       toast.error(message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleGenerateResetCode = async () => {
+    setSecurityLoading(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to generate reset code");
+      setGeneratedCode(json.resetCode || "");
+      toast.success("Reset code generated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to generate reset code");
+    } finally {
+      setSecurityLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setSecurityLoading(true);
+    try {
+      const token = localStorage.getItem("admin_token");
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+          resetCode,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to change password");
+      setCurrentPassword("");
+      setNewPassword("");
+      setResetCode("");
+      setGeneratedCode("");
+      toast.success("Password updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to change password");
+    } finally {
+      setSecurityLoading(false);
     }
   };
 
@@ -230,6 +291,88 @@ export default function AdminSettingsPage() {
               Save Settings
             </Button>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl border border-[#D4A853]/10 bg-[#111] p-6"
+          >
+            <h2 className="font-cinzel text-[#D4A853] text-lg font-semibold mb-5">Admin Security</h2>
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-6">
+              <div className="rounded-2xl border border-[#D4A853]/10 bg-[#0D0D0D] p-5 space-y-4">
+                <p className="text-[#F5F5F5]/75 text-sm font-medium">Change Password</p>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Current password"
+                  className="input-spiritual rounded-xl px-4 py-3 text-sm w-full"
+                />
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="New password"
+                  className="input-spiritual rounded-xl px-4 py-3 text-sm w-full"
+                />
+                <input
+                  type="text"
+                  value={resetCode}
+                  onChange={(e) => setResetCode(e.target.value)}
+                  placeholder="Optional reset code instead of current password"
+                  className="input-spiritual rounded-xl px-4 py-3 text-sm w-full"
+                />
+                <button type="button" onClick={handleChangePassword} className="px-4 py-3 rounded-full bg-gradient-to-r from-[#C17F4A] to-[#D4A853] text-white text-sm font-semibold" disabled={securityLoading}>
+                  Update Password
+                </button>
+              </div>
+
+              <div className="rounded-2xl border border-[#D4A853]/10 bg-[#0D0D0D] p-5 space-y-4">
+                <p className="text-[#F5F5F5]/75 text-sm font-medium">Forgot Password Recovery</p>
+                <input
+                  type="email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  placeholder="Admin email"
+                  className="input-spiritual rounded-xl px-4 py-3 text-sm w-full"
+                />
+                <button type="button" onClick={handleGenerateResetCode} className="px-4 py-3 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-sm font-semibold" disabled={securityLoading}>
+                  Generate Reset Code
+                </button>
+                {generatedCode ? (
+                  <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-4">
+                    <p className="text-green-300 text-xs uppercase tracking-wide mb-1">Reset code</p>
+                    <p className="font-cinzel text-lg text-white">{generatedCode}</p>
+                    <p className="text-[#F5F5F5]/40 text-xs mt-2">Use this once in the change password box above.</p>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-[#D4A853]/10 bg-[#0D0D0D] p-5">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <p className="text-[#F5F5F5]/75 text-sm font-medium">Recent login history</p>
+                <span className="text-[#D4A853]/60 text-xs">Superadmin only</span>
+              </div>
+              <div className="space-y-3">
+                {history.length === 0 ? (
+                  <p className="text-sm text-[#F5F5F5]/35">No login activity recorded yet.</p>
+                ) : history.map((entry) => (
+                  <div key={String(entry._id || entry.timestamp)} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl border border-[#D4A853]/10 bg-[#111] p-3">
+                    <div>
+                      <p className="text-sm text-[#F5F5F5]/75">{entry.email}</p>
+                      <p className="text-xs text-[#F5F5F5]/35">{entry.ipAddress || "unknown IP"} · {entry.mode || "local"}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-xs ${entry.status === "success" ? "text-green-300" : "text-red-300"}`}>{entry.status}</p>
+                      <p className="text-xs text-[#D4A853]/60">{new Date(String(entry.timestamp || entry.createdAt)).toLocaleString("en-IN")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </form>
       )}
     </div>

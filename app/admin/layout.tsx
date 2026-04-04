@@ -27,9 +27,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [adminSearch, setAdminSearch] = useState("");
   const isPrintRoute =
-    pathname?.startsWith("/admin/shop-orders/") &&
-    (pathname.endsWith("/print") || pathname.endsWith("/invoice"));
+    (pathname?.startsWith("/admin/shop-orders/") &&
+      (pathname.endsWith("/print") || pathname.endsWith("/invoice"))) ||
+    (pathname?.startsWith("/admin/donations/") &&
+      (pathname.endsWith("/receipt") || pathname.endsWith("/certificate")));
 
   useEffect(() => {
     if (pathname === "/admin/login") {
@@ -119,6 +122,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (isPrintRoute) {
     return <div className="min-h-screen bg-[#f5f1e8]">{children}</div>;
   }
+
+  const filteredNavItems = adminSearch
+    ? navItems.filter((item) => item.label.toLowerCase().includes(adminSearch.toLowerCase()))
+    : [];
 
   return (
     <div className="min-h-screen bg-[#0D0D0D] flex">
@@ -218,8 +225,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </p>
             </div>
           </div>
+          <div className="px-4 pb-3">
+            <input
+              value={adminSearch}
+              onChange={(e) => setAdminSearch(e.target.value)}
+              placeholder="Quick search admin sections..."
+              className="w-full rounded-full bg-[#151515] border border-[#D4A853]/10 px-4 py-2.5 text-sm text-[#F5F5F5]/80"
+            />
+          </div>
         </div>
         <div className="p-4 sm:p-6 lg:p-8">
+        {adminSearch && filteredNavItems.length > 0 && (
+          <div className="mb-6 rounded-2xl border border-[#D4A853]/10 bg-[#111] p-4">
+            <p className="text-[#D4A853] text-sm font-medium mb-3">Quick results</p>
+            <div className="flex flex-wrap gap-2">
+              {filteredNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setAdminSearch("")}
+                  className="px-3 py-2 rounded-full border border-[#D4A853]/20 text-[#F5F5F5]/70 text-sm hover:text-[#D4A853]"
+                >
+                  {item.icon} {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
         {children}
         </div>
       </main>

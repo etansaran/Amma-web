@@ -21,6 +21,9 @@ type Store = {
   settings: Record<string, any>;
   shopProducts: Record<string, any>[];
   shopOrders: Record<string, any>[];
+  adminAccount: Record<string, any>;
+  loginHistory: Record<string, any>[];
+  passwordResetTokens: Record<string, any>[];
 };
 
 function nowIso() {
@@ -152,6 +155,16 @@ function seedStore(): Store {
     virtualSevaBookings: [],
     shopProducts,
     shopOrders: [],
+    adminAccount: {
+      _id: LOCAL_ADMIN_ID,
+      name: "Local Admin",
+      email: process.env.ADMIN_EMAIL || "admin@amma.org",
+      password: process.env.ADMIN_PASSWORD || "admin",
+      role: "superadmin",
+      updatedAt: createdAt,
+    },
+    loginHistory: [],
+    passwordResetTokens: [],
     settings: {
       youtubeLiveId: "",
       siteAnnouncement: "",
@@ -191,9 +204,15 @@ export function readStore(): Store {
       },
       shopProducts: stored.shopProducts && stored.shopProducts.length > 0 ? stored.shopProducts : seeded.shopProducts,
       shopOrders: stored.shopOrders || [],
+      adminAccount: {
+        ...seeded.adminAccount,
+        ...(stored.adminAccount || {}),
+      },
+      loginHistory: stored.loginHistory || [],
+      passwordResetTokens: stored.passwordResetTokens || [],
     };
 
-    if (!stored.shopProducts || !stored.shopOrders) {
+    if (!stored.shopProducts || !stored.shopOrders || !stored.adminAccount || !stored.loginHistory || !stored.passwordResetTokens) {
       writeStore(merged);
     }
 
@@ -226,6 +245,83 @@ export function updateStore<T>(updater: (store: Store) => T): T {
   const result = updater(store);
   writeStore(store);
   return result;
+}
+
+export const LOCAL_ADMIN_ID = "local-admin";
+
+export function getLocalAdminAccount() {
+  return readStore().adminAccount;
+}
+
+export function updateLocalAdminAccount(patch: Record<string, any>) {
+  let account: Record<string, any> | null = null;
+  updateStore((store) => {
+    store.adminAccount = {
+      ...store.adminAccount,
+      ...patch,
+      updatedAt: nowIso(),
+    };
+    account = store.adminAccount;
+  });
+  return account;
+}
+
+export function recordLoginHistory(entry: Record<string, any>) {
+  updateStore((store) => {
+    store.loginHistory.unshift(
+      createLocalRecord({
+        ...entry,
+      })
+    );
+    store.loginHistory = store.loginHistory.slice(0, 100);
+  });
+}
+
+export function getLoginHistory(limit = 25) {
+  return readStore().loginHistory.slice(0, limit);
+}
+
+export function createPasswordResetToken(email: string) {
+  const token = `AMMA-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+
+  updateStore((store) => {
+    store.passwordResetTokens = store.passwordResetTokens.filter(
+      (item) => item.email !== email && new Date(item.expiresAt).getTime() > Date.now()
+    );
+    store.passwordResetTokens.unshift(
+      createLocalRecord({
+        email,
+        token,
+        expiresAt,
+        usedAt: null,
+      })
+    );
+  });
+
+  return { token, expiresAt };
+}
+
+export function consumePasswordResetToken(email: string, token: string) {
+  let valid = false;
+  updateStore((store) => {
+    store.passwordResetTokens = store.passwordResetTokens.map((item) => {
+      if (
+        item.email === email &&
+        item.token === token &&
+        !item.usedAt &&
+        new Date(item.expiresAt).getTime() > Date.now()
+      ) {
+        valid = true;
+        return {
+          ...item,
+          usedAt: nowIso(),
+        };
+      }
+      return item;
+    });
+  });
+  return valid;
 }
 
 export function createLocalRecord<T extends Record<string, any>>(data: T): T & {

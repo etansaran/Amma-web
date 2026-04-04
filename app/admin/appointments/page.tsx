@@ -34,6 +34,9 @@ export default function AdminAppointmentsPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
@@ -46,26 +49,54 @@ export default function AdminAppointmentsPage() {
       .finally(() => setLoading(false));
   }, [activeTab, refreshKey]);
 
-  const updateStatus = async (id: string, status: string) => {
+  const updateAppointment = async (id: string, payload: Partial<Appointment>) => {
     setUpdating(id);
     const token = localStorage.getItem("admin_token");
     try {
       await fetch(`/api/appointments/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(payload),
       });
-      setAppointments(prev => prev.map(a => a._id === id ? { ...a, status } : a));
-      toast.success(`Status updated to ${status}`);
+      setAppointments(prev => prev.map(a => a._id === id ? { ...a, ...payload } : a));
+      toast.success(payload.status ? `Status updated to ${payload.status}` : "Appointment updated");
     } catch { toast.error("Update failed"); }
     finally { setUpdating(null); }
   };
 
+  const groupedByDate = appointments.reduce((acc: Record<string, Appointment[]>, item) => {
+    const key = item.preferredDate.slice(0, 10);
+    acc[key] = acc[key] || [];
+    acc[key].push(item);
+    return acc;
+  }, {});
+
+  const visibleAppointments = appointments.filter((appt) => !selectedDate || appt.preferredDate.slice(0, 10) === selectedDate);
+  const calendarDates = Object.keys(groupedByDate).sort();
+
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
         <h1 className="font-cinzel text-3xl font-bold text-[#D4A853]">Appointments</h1>
         <p className="text-[#F5F5F5]/40 font-raleway text-sm">Manage darshan appointment requests</p>
+        </div>
+        <div className="flex gap-3 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setViewMode("calendar")}
+            className={`px-4 py-2 rounded-full text-sm ${viewMode === "calendar" ? "bg-[#D4A853] text-[#0D0D0D]" : "border border-[#D4A853]/20 text-[#F5F5F5]/50"}`}
+          >
+            Calendar View
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            className={`px-4 py-2 rounded-full text-sm ${viewMode === "list" ? "bg-[#D4A853] text-[#0D0D0D]" : "border border-[#D4A853]/20 text-[#F5F5F5]/50"}`}
+          >
+            List View
+          </button>
+        </div>
       </div>
 
       {/* Status filter tabs */}
@@ -109,8 +140,30 @@ export default function AdminAppointmentsPage() {
           <p className="text-[#F5F5F5]/40 font-raleway text-sm">No appointments{activeTab !== "all" ? ` with status "${activeTab}"` : ""}</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {appointments.map((appt) => (
+        <div className="space-y-6">
+          {viewMode === "calendar" && (
+            <div className="rounded-2xl border border-[#D4A853]/10 bg-[#111] p-4 sm:p-5">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedDate("")}
+                  className={`px-3 py-2 rounded-full text-xs ${!selectedDate ? "bg-[#D4A853] text-[#0D0D0D]" : "border border-[#D4A853]/20 text-[#F5F5F5]/55"}`}
+                >
+                  All Dates
+                </button>
+                {calendarDates.map((date) => (
+                  <button
+                    key={date}
+                    onClick={() => setSelectedDate(date)}
+                    className={`px-3 py-2 rounded-full text-xs ${selectedDate === date ? "bg-[#D4A853] text-[#0D0D0D]" : "border border-[#D4A853]/20 text-[#F5F5F5]/55"}`}
+                  >
+                    {formatDate(date)} · {groupedByDate[date].length}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {visibleAppointments.map((appt) => (
             <div key={appt._id} className="rounded-2xl border border-[#D4A853]/10 bg-[#111] p-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -144,7 +197,7 @@ export default function AdminAppointmentsPage() {
               <div className="mt-4 flex gap-2 flex-wrap">
                 {["pending", "confirmed", "completed", "cancelled"].map(status => (
                   <button key={status}
-                    onClick={() => updateStatus(appt._id, status)}
+                    onClick={() => updateAppointment(appt._id, { status })}
                     disabled={appt.status === status || updating === appt._id}
                     className={`px-3 py-1.5 rounded-full text-xs font-raleway font-medium capitalize transition-all duration-200 ${
                       appt.status === status
@@ -154,6 +207,26 @@ export default function AdminAppointmentsPage() {
                     {status}
                   </button>
                 ))}
+              </div>
+
+              <div className="mt-4 rounded-xl border border-[#D4A853]/10 bg-[#0D0D0D] p-3">
+                <label className="block text-[#D4A853]/70 text-xs mb-2">Admin notes</label>
+                <textarea
+                  value={notesDraft[appt._id] ?? appt.adminNotes ?? ""}
+                  onChange={(e) => setNotesDraft((prev) => ({ ...prev, [appt._id]: e.target.value }))}
+                  rows={3}
+                  className="w-full rounded-xl bg-[#151515] border border-[#D4A853]/10 px-3 py-2 text-sm text-[#F5F5F5]/80"
+                  placeholder="Add internal notes, callback details, or confirmation remarks"
+                />
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => updateAppointment(appt._id, { adminNotes: notesDraft[appt._id] ?? appt.adminNotes ?? "" })}
+                    className="px-4 py-2 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-xs"
+                  >
+                    Save Notes
+                  </button>
+                </div>
               </div>
             </div>
           ))}
