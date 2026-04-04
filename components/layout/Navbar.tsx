@@ -20,6 +20,7 @@ export default function Navbar() {
     { href: "/services", label: n.services },
     { href: "/events", label: n.events },
     { href: "/blog", label: n.teachings },
+    { href: "/gallery", label: lang === "ta" ? "காட்சியகம்" : "Gallery" },
     { href: "/shop", label: n.shop },
     { href: "/live-darshan", label: n.liveDarshan },
     { href: "/donate", label: n.donate, highlight: true },

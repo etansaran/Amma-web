@@ -44,6 +44,9 @@ export default function AdminBlogsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<BlogForm>({
     resolver: zodResolver(blogSchema),
@@ -53,12 +56,17 @@ export default function AdminBlogsPage() {
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
     setLoading(true);
-    fetch("/api/blogs?admin=true&limit=100", { headers: { Authorization: `Bearer ${token}` } })
+    const params = new URLSearchParams({ admin: "true", limit: "100" });
+    if (search) params.set("search", search);
+    fetch(`/api/blogs?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(data => setBlogs(data.blogs ?? []))
+      .then(data => {
+        setBlogs(data.blogs ?? []);
+        setSelectedIds([]);
+      })
       .catch(() => setError("Failed to load blogs"))
       .finally(() => setLoading(false));
-  }, [refreshKey]);
+  }, [refreshKey, search]);
 
   const handleEdit = async (id: string) => {
     const token = localStorage.getItem("admin_token");
@@ -107,6 +115,66 @@ export default function AdminBlogsPage() {
     } catch { toast.error("Delete failed"); }
   };
 
+  const filteredBlogs = blogs.filter((blog) =>
+    statusFilter === "all" ? true : statusFilter === "published" ? blog.isPublished : !blog.isPublished
+  );
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]);
+  };
+
+  const bulkUpdatePublished = async (isPublished: boolean) => {
+    const token = localStorage.getItem("admin_token");
+    try {
+      await Promise.all(selectedIds.map(async (id) => {
+        const res = await fetch(`/api/blogs/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        const blog = data.blog;
+        return fetch(`/api/blogs/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            title: blog.title,
+            excerpt: blog.excerpt ?? "",
+            content: blog.content ?? "",
+            category: blog.category,
+            author: blog.author ?? "Amma Ashram",
+            isFeatured: blog.isFeatured,
+            isPublished,
+          }),
+        });
+      }));
+      toast.success(`Selected posts ${isPublished ? "published" : "moved to drafts"}`);
+      setRefreshKey((k) => k + 1);
+    } catch {
+      toast.error("Bulk update failed");
+    }
+  };
+
+  const exportCsv = () => {
+    const rows = [
+      ["Title", "Category", "Author", "Published", "Featured", "Read Time", "Views", "Date"],
+      ...filteredBlogs.map((blog) => [
+        blog.title,
+        blog.category,
+        blog.author || "",
+        blog.isPublished ? "Yes" : "No",
+        blog.isFeatured ? "Yes" : "No",
+        blog.readTime ?? "",
+        blog.views ?? 0,
+        blog.createdAt,
+      ]),
+    ];
+    const csv = rows.map((row) => row.map((item) => `"${String(item ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "amma-blog-posts.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -117,6 +185,33 @@ export default function AdminBlogsPage() {
         <Button onClick={() => { setShowForm(!showForm); setEditingId(null); reset(); }} variant="primary">
           {showForm ? "Cancel" : "+ New Post"}
         </Button>
+      </div>
+
+      <div className="mb-6 flex flex-col sm:flex-row gap-3">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search title, author, category..."
+          className="input-spiritual rounded-full px-4 py-2.5 text-sm min-w-[260px]"
+        />
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input-spiritual rounded-full px-4 py-2.5 text-sm">
+          <option value="all">All statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Drafts</option>
+        </select>
+        <button type="button" onClick={exportCsv} className="px-4 py-2.5 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-sm">
+          Export CSV
+        </button>
+        {selectedIds.length > 0 && (
+          <>
+            <button type="button" onClick={() => bulkUpdatePublished(true)} className="px-4 py-2.5 rounded-full border border-green-400/20 text-green-300 text-sm">
+              Publish Selected
+            </button>
+            <button type="button" onClick={() => bulkUpdatePublished(false)} className="px-4 py-2.5 rounded-full border border-yellow-400/20 text-yellow-300 text-sm">
+              Move to Draft
+            </button>
+          </>
+        )}
       </div>
 
       {showForm && (
@@ -173,7 +268,7 @@ export default function AdminBlogsPage() {
               <div key={i} className="h-12 rounded-lg bg-[#D4A853]/5 animate-pulse" />
             ))}
           </div>
-        ) : blogs.length === 0 ? (
+        ) : filteredBlogs.length === 0 ? (
           <div className="p-12 text-center">
             <p className="text-4xl mb-3">📝</p>
             <p className="text-[#F5F5F5]/40 font-raleway text-sm">No blog posts yet. Create your first post!</p>
@@ -181,8 +276,12 @@ export default function AdminBlogsPage() {
         ) : (
           <>
             <div className="md:hidden divide-y divide-[#D4A853]/5">
-              {blogs.map((blog) => (
+              {filteredBlogs.map((blog) => (
                 <div key={blog._id} className="p-4 space-y-3">
+                  <label className="flex items-center gap-2 text-xs text-[#F5F5F5]/35">
+                    <input type="checkbox" checked={selectedIds.includes(blog._id)} onChange={() => toggleSelection(blog._id)} className="accent-[#D4A853]" />
+                    Select
+                  </label>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-[#F5F5F5]/85 text-sm font-medium">{blog.title}</p>
@@ -209,14 +308,17 @@ export default function AdminBlogsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4A853]/10">
-                  {["Title", "Category", "Read Time", "Views", "Status", "Date", "Actions"].map(h => (
+                  {["", "Title", "Category", "Read Time", "Views", "Status", "Date", "Actions"].map(h => (
                     <th key={h} className="text-left p-4 font-cinzel text-[#D4A853] text-xs font-semibold uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#D4A853]/5">
-                {blogs.map((blog) => (
+                {filteredBlogs.map((blog) => (
                   <tr key={blog._id} className="hover:bg-[#D4A853]/3 transition-colors">
+                    <td className="p-4">
+                      <input type="checkbox" checked={selectedIds.includes(blog._id)} onChange={() => toggleSelection(blog._id)} className="accent-[#D4A853]" />
+                    </td>
                     <td className="p-4">
                       <p className="text-[#F5F5F5]/80 text-sm font-raleway font-medium">{blog.title}</p>
                       {blog.isFeatured && <span className="text-[#D4A853] text-xs">★ Featured</span>}

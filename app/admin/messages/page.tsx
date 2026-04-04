@@ -21,16 +21,25 @@ export default function AdminMessagesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [search, setSearch] = useState("");
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
     setLoading(true);
-    fetch("/api/contact", { headers: { Authorization: `Bearer ${token}` } })
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (showUnreadOnly) params.set("unread", "true");
+    fetch(`/api/contact${params.toString() ? `?${params.toString()}` : ""}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(data => setMessages(data.messages ?? []))
+      .then(data => {
+        setMessages(data.messages ?? []);
+        setSelectedIds([]);
+      })
       .catch(() => setError("Failed to load messages"))
       .finally(() => setLoading(false));
-  }, [refreshKey]);
+  }, [refreshKey, search, showUnreadOnly]);
 
   const markRead = async (id: string) => {
     const token = localStorage.getItem("admin_token");
@@ -48,14 +57,71 @@ export default function AdminMessagesPage() {
   };
 
   const unreadCount = messages.filter(m => !m.isRead).length;
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]);
+  };
+  const bulkMarkRead = async () => {
+    const token = localStorage.getItem("admin_token");
+    try {
+      await Promise.all(selectedIds.map((id) =>
+        fetch(`/api/contact/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ isRead: true }),
+        })
+      ));
+      setMessages((prev) => prev.map((m) => selectedIds.includes(m._id) ? { ...m, isRead: true } : m));
+      setSelectedIds([]);
+      toast.success("Selected messages marked as read");
+    } catch {
+      toast.error("Bulk update failed");
+    }
+  };
+  const exportCsv = () => {
+    const rows = [
+      ["Name", "Email", "Phone", "Subject", "Message", "Read", "Date"],
+      ...messages.map((m) => [m.name, m.email, m.phone || "", m.subject, m.message, m.isRead ? "Yes" : "No", m.createdAt]),
+    ];
+    const csv = rows.map((row) => row.map((item) => `"${String(item ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "amma-contact-messages.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-8 flex flex-col gap-4">
         <h1 className="font-cinzel text-3xl font-bold text-[#D4A853]">Contact Messages</h1>
         <p className="text-[#F5F5F5]/40 font-raleway text-sm">
           {loading ? "Loading..." : `${unreadCount} unread message${unreadCount !== 1 ? "s" : ""}`}
         </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name, email, subject..."
+            className="input-spiritual rounded-full px-4 py-2.5 text-sm min-w-[260px]"
+          />
+          <button
+            type="button"
+            onClick={() => setShowUnreadOnly((prev) => !prev)}
+            className={`px-4 py-2.5 rounded-full text-sm ${showUnreadOnly ? "bg-[#D4A853] text-[#0D0D0D]" : "border border-[#D4A853]/20 text-[#D4A853]"}`}
+          >
+            {showUnreadOnly ? "Showing unread" : "Unread only"}
+          </button>
+          <button type="button" onClick={exportCsv} className="px-4 py-2.5 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-sm">
+            Export CSV
+          </button>
+          {selectedIds.length > 0 && (
+            <button type="button" onClick={bulkMarkRead} className="px-4 py-2.5 rounded-full border border-green-400/20 text-green-300 text-sm">
+              Mark {selectedIds.length} Read
+            </button>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -95,6 +161,17 @@ export default function AdminMessagesPage() {
                 msg.isRead ? "border-[#D4A853]/8" : "border-[#D4A853]/25 shadow-[0_0_15px_rgba(212,168,83,0.08)]"
               }`}
             >
+              <div className="mb-3">
+                <label className="flex items-center gap-2 text-xs text-[#F5F5F5]/35">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(msg._id)}
+                    onChange={() => toggleSelection(msg._id)}
+                    className="accent-[#D4A853]"
+                  />
+                  Select for bulk action
+                </label>
+              </div>
               <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                 <div>
                   <div className="flex items-center gap-2">

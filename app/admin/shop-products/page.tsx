@@ -56,17 +56,26 @@ export default function AdminShopProductsPage() {
   const [form, setForm] = useState<ProductForm>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [stockFilter, setStockFilter] = useState("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadProducts = async () => {
     const token = localStorage.getItem("admin_token");
     setLoading(true);
     try {
-      const response = await fetch("/api/shop/products?admin=true&limit=100", {
+      const params = new URLSearchParams({ admin: "true", limit: "100" });
+      if (search) params.set("search", search);
+      if (categoryFilter !== "all") params.set("category", categoryFilter);
+      const response = await fetch(`/api/shop/products?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-      setProducts(data.products ?? []);
+      let rows = data.products ?? [];
+      if (stockFilter === "low") rows = rows.filter((item: ShopProduct) => Number(item.stockQuantity) <= 3);
+      if (stockFilter === "out") rows = rows.filter((item: ShopProduct) => Number(item.stockQuantity) <= 0);
+      setProducts(rows);
     } catch {
       toast.error("Failed to load products");
     } finally {
@@ -76,7 +85,7 @@ export default function AdminShopProductsPage() {
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [search, categoryFilter, stockFilter]);
 
   const resetForm = () => {
     setForm(initialForm);
@@ -188,6 +197,29 @@ export default function AdminShopProductsPage() {
     }
   };
 
+  const exportCsv = () => {
+    const rows = [
+      ["Title", "Category", "Price", "Stock", "SKU", "Published", "Featured"],
+      ...products.map((product) => [
+        product.title,
+        product.category,
+        product.price,
+        product.stockQuantity,
+        product.sku || "",
+        product.isPublished ? "Yes" : "No",
+        product.isFeatured ? "Yes" : "No",
+      ]),
+    ];
+    const csv = rows.map((row) => row.map((item) => `"${String(item ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "amma-shop-products.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -203,6 +235,29 @@ export default function AdminShopProductsPage() {
           className="px-5 py-3 rounded-full bg-gradient-to-r from-[#C17F4A] to-[#D4A853] text-white text-sm font-semibold"
         >
           {showForm ? "Close Form" : "+ Add Product"}
+        </button>
+      </div>
+
+      <div className="mb-6 flex flex-col sm:flex-row gap-3">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search products, tags, description..."
+          className="input-spiritual rounded-full px-4 py-2.5 text-sm min-w-[260px]"
+        />
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="input-spiritual rounded-full px-4 py-2.5 text-sm">
+          <option value="all">All categories</option>
+          <option value="books">Books</option>
+          <option value="rudraksha">Rudraksha</option>
+          <option value="home-decor">Home Decor</option>
+        </select>
+        <select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)} className="input-spiritual rounded-full px-4 py-2.5 text-sm">
+          <option value="all">All stock</option>
+          <option value="low">Low stock</option>
+          <option value="out">Out of stock</option>
+        </select>
+        <button type="button" onClick={exportCsv} className="px-4 py-2.5 rounded-full border border-[#D4A853]/20 text-[#D4A853] text-sm">
+          Export CSV
         </button>
       </div>
 

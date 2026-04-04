@@ -13,12 +13,21 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category");
     const featured = searchParams.get("featured");
     const admin = searchParams.get("admin");
+    const search = searchParams.get("search")?.toLowerCase().trim();
 
     if (LOCAL_MODE) {
       const store = readStore();
       let blogs = store.blogs.filter((blog) => (admin ? true : blog.isPublished));
       if (category) blogs = blogs.filter((blog) => blog.category === category);
       if (featured === "true") blogs = blogs.filter((blog) => blog.isFeatured);
+      if (search) {
+        blogs = blogs.filter((blog) =>
+          [blog.title, blog.excerpt, blog.author, blog.category]
+            .join(" ")
+            .toLowerCase()
+            .includes(search)
+        );
+      }
       blogs = blogs
         .map((blog) => {
           const { content, ...rest } = blog;
@@ -38,6 +47,14 @@ export async function GET(request: NextRequest) {
     const query: Record<string, unknown> = admin ? {} : { isPublished: true };
     if (category) query.category = category;
     if (featured === "true") query.isFeatured = true;
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { excerpt: { $regex: search, $options: "i" } },
+        { author: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+      ];
+    }
 
     const total = await Blog.countDocuments(query);
     const blogs = await Blog.find(query)

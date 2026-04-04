@@ -72,13 +72,35 @@ export async function GET(request: NextRequest) {
   if (error) return error;
 
   try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.toLowerCase().trim();
+    const unreadOnly = searchParams.get("unread") === "true";
     if (LOCAL_MODE) {
-      const store = readStore();
-      return NextResponse.json({ messages: store.contactMessages.slice(0, 50) });
+      let messages = [...readStore().contactMessages];
+      if (unreadOnly) messages = messages.filter((item) => !item.isRead);
+      if (search) {
+        messages = messages.filter((item) =>
+          [item.name, item.email, item.subject, item.message]
+            .join(" ")
+            .toLowerCase()
+            .includes(search)
+        );
+      }
+      return NextResponse.json({ messages: messages.slice(0, 200) });
     }
 
     await connectDB();
-    const messages = await ContactMessage.find().sort({ createdAt: -1 }).limit(50).lean();
+    const query: Record<string, any> = {};
+    if (unreadOnly) query.isRead = false;
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { subject: { $regex: search, $options: "i" } },
+        { message: { $regex: search, $options: "i" } },
+      ];
+    }
+    const messages = await ContactMessage.find(query).sort({ createdAt: -1 }).limit(200).lean();
     return NextResponse.json({ messages });
   } catch {
     return NextResponse.json({ error: "Failed to fetch messages" }, { status: 500 });
