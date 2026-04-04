@@ -41,3 +41,6 @@ next-env.d.ts
 
 # Local app data
 .local-data/
+
+# Local stray assets
+image (1).jpg

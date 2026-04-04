@@ -1,0 +1,7 @@
+<resources>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="gold">#D4A853</color>
+    <color name="terracotta">#C17F4A</color>
+    <color name="bg_dark">#0D0D0D</color>
+</resources>
