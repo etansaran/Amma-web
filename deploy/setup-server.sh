@@ -45,7 +45,11 @@ if [[ "${CONFIGURE_CADDY:-0}" == "1" ]]; then
   else
     cp -p "$CF" "$CF.bak-thiyaneswaramma-$(date +%Y%m%d%H%M%S)"
     curl -fsSL "$RAW/caddy/$DOMAIN.caddy" >> "$CF"
+    # Caddy runs as the `caddy` user; create its log file up front so a
+    # root-run validate cannot leave it owned by root (reload would fail).
+    install -o caddy -g caddy -m 600 /dev/null /var/log/caddy/thiyaneswaramma.log
     if caddy validate --config "$CF" --adapter caddyfile; then
+      chown caddy:caddy /var/log/caddy/thiyaneswaramma.log
       systemctl reload caddy
       echo "Caddy reloaded; HTTPS certificates are issued automatically."
     else
