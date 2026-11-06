@@ -17,6 +17,11 @@ export const catamaran = Catamaran({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin", "tamil"],
   display: "swap",
+  // Not preloaded: the Tamil subset is ~120 KB and would compete with the
+  // hero image. It still loads straight away; the size-matched fallback
+  // (adjustFontFallback) keeps the layout from shifting.
+  preload: false,
+  adjustFontFallback: true,
   variable: "--font-catamaran",
 });
 
