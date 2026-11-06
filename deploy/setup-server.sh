@@ -1,64 +1,59 @@
 #!/usr/bin/env bash
-# One-time setup for an Ubuntu VPS (Hostinger). Safe to re-run.
-# It adds a new Nginx site and a new PM2 app; it never removes or edits
-# other sites already on the server.
+# One-time setup on the Ubuntu VPS. Safe to re-run.
+# Matches the server's existing pattern: each app runs as its own user under
+# /opt as a systemd service, and Caddy serves HTTPS in front of it.
+# It adds this site only; other apps and Caddy sites are left untouched.
 #
-#   sudo bash setup-server.sh
+#   sudo bash setup-server.sh                 # app + service + first build
+#   sudo CONFIGURE_CADDY=1 bash setup-server.sh   # also add the Caddy site (after DNS points here)
 set -euo pipefail
 
 DOMAIN="thiyaneswaramma.org"
-APP_DIR="/var/www/thiyaneswaramma"
-REPO="https://github.com/etansaran/Amma-web.git"
-NODE_MAJOR=22
+APP_USER="thiyaneswaramma"
+APP_DIR="/opt/thiyaneswaramma"
+RAW="https://raw.githubusercontent.com/etansaran/Amma-web/main/deploy"
 
 if [[ $EUID -ne 0 ]]; then echo "Run as root (sudo)."; exit 1; fi
 
-echo "==> Packages"
-apt-get update -y
-apt-get install -y nginx git curl ca-certificates certbot python3-certbot-nginx
-
-echo "==> Node.js ${NODE_MAJOR} (skipped if a recent Node is already installed)"
+echo "==> Requirements"
+command -v git >/dev/null || apt-get install -y git
 if ! command -v node >/dev/null || [[ $(node -p 'process.versions.node.split(".")[0]') -lt 20 ]]; then
-  curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
+  curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt-get install -y nodejs
 fi
-node -v
+echo "node $(node -v)"
 
-echo "==> PM2"
-command -v pm2 >/dev/null || npm install -g pm2
-pm2 startup systemd -u root --hp /root >/dev/null || true
+echo "==> App user and folders"
+id "$APP_USER" >/dev/null 2>&1 || useradd --system --create-home --home-dir "$APP_DIR" --shell /usr/sbin/nologin "$APP_USER"
+install -d -o "$APP_USER" -g "$APP_USER" -m 755 "$APP_DIR" "$APP_DIR/releases"
 
-echo "==> Swap (builds need memory on small VPS plans)"
-if ! swapon --show | grep -q .; then
-  fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
-  grep -q '/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
-fi
-
-echo "==> Folders"
-mkdir -p "$APP_DIR/releases" /var/log/thiyaneswaramma
-
-echo "==> Firewall (only if ufw is active)"
-if ufw status | grep -q "Status: active"; then
-  ufw allow 'Nginx Full'
-fi
+echo "==> Deploy command and service"
+curl -fsSL "$RAW/deploy.sh" -o /usr/local/bin/deploy-thiyaneswaramma
+chmod 755 /usr/local/bin/deploy-thiyaneswaramma
+curl -fsSL "$RAW/thiyaneswaramma.service" -o /etc/systemd/system/thiyaneswaramma.service
+systemctl daemon-reload
+systemctl enable thiyaneswaramma.service >/dev/null
 
 echo "==> First deploy"
-curl -fsSL "https://raw.githubusercontent.com/etansaran/Amma-web/main/deploy/deploy.sh" -o /usr/local/bin/deploy-thiyaneswaramma
-chmod +x /usr/local/bin/deploy-thiyaneswaramma
-REPO="$REPO" APP_DIR="$APP_DIR" /usr/local/bin/deploy-thiyaneswaramma
+/usr/local/bin/deploy-thiyaneswaramma
 
-echo "==> Nginx site"
-cp "$APP_DIR/current/deploy/nginx/${DOMAIN}.conf" "/etc/nginx/sites-available/${DOMAIN}.conf"
-ln -sfn "/etc/nginx/sites-available/${DOMAIN}.conf" "/etc/nginx/sites-enabled/${DOMAIN}.conf"
-nginx -t
-systemctl reload nginx
+if [[ "${CONFIGURE_CADDY:-0}" == "1" ]]; then
+  echo "==> Caddy site for $DOMAIN"
+  CF=/etc/caddy/Caddyfile
+  if grep -q "^$DOMAIN {" "$CF"; then
+    echo "Caddy already has $DOMAIN — leaving it as is."
+  else
+    cp -p "$CF" "$CF.bak-thiyaneswaramma-$(date +%Y%m%d%H%M%S)"
+    curl -fsSL "$RAW/caddy/$DOMAIN.caddy" >> "$CF"
+    if caddy validate --config "$CF" --adapter caddyfile; then
+      systemctl reload caddy
+      echo "Caddy reloaded; HTTPS certificates are issued automatically."
+    else
+      echo "!! Caddy config invalid — restoring the backup."
+      cp -p "$(ls -1t $CF.bak-thiyaneswaramma-* | head -1)" "$CF"
+      exit 1
+    fi
+  fi
+fi
 
-cat <<MSG
-
-Done. The site runs behind Nginx on port 80.
-Next, once the DNS A record for ${DOMAIN} points to this server:
-
-  certbot --nginx -d ${DOMAIN} -d www.${DOMAIN} --redirect -m srithiyanesamma@gmail.com --agree-tos -n
-
-Future updates:  deploy-thiyaneswaramma
-MSG
+echo "Done. Updates from now on:  sudo deploy-thiyaneswaramma"

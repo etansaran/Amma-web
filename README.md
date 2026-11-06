@@ -13,10 +13,10 @@ npm run dev        # http://localhost:3000
 
 ```bash
 npm run build      # production build: static pages + a standalone server in .next/standalone
-npm run start:prod # run that server (PORT=3100 HOSTNAME=127.0.0.1 on the VPS)
+npm run start:prod # run that server (port 3100 behind Caddy on the VPS)
 ```
 
-Hosting: your Hostinger VPS (Nginx + PM2). Setup, HTTPS and updates are in [docs/DEPLOY-VPS.md](docs/DEPLOY-VPS.md).
+Hosting: your Hostinger VPS (Caddy + systemd). Setup, HTTPS and updates are in [docs/DEPLOY-VPS.md](docs/DEPLOY-VPS.md).
 
 Quality gates: `npm run typecheck`, `npm run lint`.
 

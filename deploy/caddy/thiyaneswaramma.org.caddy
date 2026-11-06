@@ -1,0 +1,21 @@
+
+# ---- Siva Sri Thiyaneswar Amma Ashram website (Next.js on 127.0.0.1:3100) ----
+thiyaneswaramma.org {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:3100
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	}
+	log {
+		output file /var/log/caddy/thiyaneswaramma.log {
+			roll_size 50mb
+			roll_keep 5
+			roll_keep_for 720h
+		}
+	}
+}
+
+www.thiyaneswaramma.org {
+	redir https://thiyaneswaramma.org{uri} permanent
+}

@@ -1,75 +1,61 @@
 # Deploying to the Hostinger VPS
 
-The site runs on your own server: **Nginx** (web server, HTTPS) → **PM2** (keeps the app running) → **Next.js standalone server** on `127.0.0.1:3100`.
-Each deploy builds into a new folder and switches over only when the build succeeds, so a failed build never takes the site down.
+Server: Hostinger VPS `srv2005243` (157.173.219.250), Ubuntu 24.04. The same server also runs the ConvertFunnel / DermaCare apps; this site is added alongside them and never touches them.
 
-Works on Ubuntu 22.04 / 24.04 (Hostinger's default VPS images). It adds a new site alongside anything else on the server and does not remove or change other sites.
+How it runs, following the server's existing pattern:
 
-## 1. Point the domain at the VPS (Hostinger hPanel)
+- **Caddy** (already on the server) serves `thiyaneswaramma.org` over HTTPS and gets/renews certificates automatically. `www` redirects to the bare domain.
+- **systemd service** `thiyaneswaramma` runs the Next.js standalone server on `127.0.0.1:3100` as its own system user, capped at 800 MB of memory.
+- **Releases** live in `/opt/thiyaneswaramma/releases/<timestamp>`; `/opt/thiyaneswaramma/current` points at the live one. Each deploy builds a new release, switches only after a health check passes, and rolls back by itself if the new one fails. The last 3 releases are kept.
 
-Domains → **thiyaneswaramma.org** → DNS / Nameservers → DNS records:
+## DNS (Hostinger hPanel → Domains → thiyaneswaramma.org → DNS records)
 
-| Type | Name | Points to | TTL |
-|---|---|---|---|
-| A | @ | *your VPS IP* | 3600 |
-| CNAME | www | thiyaneswaramma.org | 3600 |
+| Type | Name | Points to |
+|---|---|---|
+| A | @ | 157.173.219.250 |
+| CNAME | www | thiyaneswaramma.org |
 
-Delete Hostinger's default parking `A @`, `AAAA @` and `CNAME www` records first. Keep Hostinger's nameservers.
-Your VPS IP is in hPanel → VPS → Overview.
-
-## 2. One-time server setup
-
-Log in to the VPS (hPanel → VPS → Browser terminal, or `ssh root@YOUR_VPS_IP`) and run:
+## First-time setup (already done once — keep for reference)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/etansaran/Amma-web/main/deploy/setup-server.sh -o setup-server.sh
-sudo bash setup-server.sh
+sudo bash setup-server.sh                       # user, service, first build
+sudo CONFIGURE_CADDY=1 bash setup-server.sh     # add the Caddy site once DNS points here
 ```
 
-This installs Nginx, Node.js 22, PM2 and Certbot, adds 2 GB swap if the server has none, builds the site into `/var/www/thiyaneswaramma`, starts it with PM2 and adds the Nginx site.
+The Caddy step backs up `/etc/caddy/Caddyfile`, appends `deploy/caddy/thiyaneswaramma.org.caddy`, validates it, and reloads Caddy only if valid.
 
-## 3. Turn on HTTPS
+## Updating the site
 
-Once `thiyaneswaramma.org` resolves to the VPS (check with `ping thiyaneswaramma.org`):
+On the server:
 
 ```bash
-sudo certbot --nginx -d thiyaneswaramma.org -d www.thiyaneswaramma.org --redirect -m srithiyanesamma@gmail.com --agree-tos -n
+sudo deploy-thiyaneswaramma
 ```
 
-Certificates renew automatically.
-
-## 4. Updating the site
-
-Manual (on the VPS):
-
-```bash
-deploy-thiyaneswaramma
-```
-
-Automatic on every push to `main` (optional): in GitHub → repo → Settings → Secrets and variables → Actions
+Automatically on every push to `main` (optional): GitHub → repo → Settings → Secrets and variables → Actions
 
 - **Variables:** `DEPLOY_ENABLED` = `true`
-- **Secrets:** `VPS_HOST` (VPS IP), `VPS_USER` (`root`), `VPS_SSH_KEY` (a private key whose public key is in the server's `~/.ssh/authorized_keys`)
+- **Secrets:** `VPS_HOST` = `157.173.219.250`, `VPS_USER` = `root`, `VPS_SSH_KEY` = a private key whose public key is in `/root/.ssh/authorized_keys`
 
-To make a dedicated deploy key, on your computer:
+Create a dedicated key on your computer:
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/thiyaneswaramma_deploy -N "" -C "github-deploy"
 ```
 
-Add the `.pub` file's contents to `/root/.ssh/authorized_keys` on the VPS, and paste the private key file's contents into the `VPS_SSH_KEY` secret.
-
-## Useful commands on the VPS
+## Useful commands on the server
 
 | Task | Command |
 |---|---|
-| Status | `pm2 status` |
-| Live logs | `pm2 logs thiyaneswaramma` |
-| Restart | `pm2 restart thiyaneswaramma` |
-| Roll back to the previous build | `ls -1dt /var/www/thiyaneswaramma/releases/*` then `ln -sfn <older folder> /var/www/thiyaneswaramma/current && pm2 restart thiyaneswaramma` |
-| Test Nginx config | `nginx -t && systemctl reload nginx` |
+| Status | `systemctl status thiyaneswaramma` |
+| Logs | `journalctl -u thiyaneswaramma -f` |
+| Restart | `sudo systemctl restart thiyaneswaramma` |
+| Roll back | `ls -1dt /opt/thiyaneswaramma/releases/*`, then `sudo ln -sfn <older> /opt/thiyaneswaramma/current && sudo systemctl restart thiyaneswaramma` |
+| Caddy check / reload | `caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy` |
+| Access log | `/var/log/caddy/thiyaneswaramma.log` |
 
 ## Settings
 
-- Site address: `NEXT_PUBLIC_SITE_URL` defaults to `https://thiyaneswaramma.org`. To override, put it in `/var/www/thiyaneswaramma/.env.production` and redeploy.
-- App port: `3100` (change `APP_PORT` in the environment and in `deploy/nginx/thiyaneswaramma.org.conf` together if that port is taken).
+- Site address: `NEXT_PUBLIC_SITE_URL` defaults to `https://thiyaneswaramma.org`. To override, put it in `/opt/thiyaneswaramma/.env.production` and redeploy.
+- Port `3100` is set in `deploy/thiyaneswaramma.service` and `deploy/caddy/thiyaneswaramma.org.caddy` (3000 and 3001 belong to the other apps).

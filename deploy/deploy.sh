@@ -1,49 +1,65 @@
 #!/usr/bin/env bash
 # Build the latest main branch into a fresh release folder, then switch to it.
 # The live site keeps running from the previous release until the new build
-# succeeds, so a failed build never takes the site down.
+# passes a health check; if the new release fails, it rolls back by itself.
 #
-#   deploy-thiyaneswaramma            (installed by setup-server.sh)
+#   sudo deploy-thiyaneswaramma          (installed by deploy/setup-server.sh)
 set -euo pipefail
 
 REPO="${REPO:-https://github.com/etansaran/Amma-web.git}"
 BRANCH="${BRANCH:-main}"
-APP_DIR="${APP_DIR:-/var/www/thiyaneswaramma}"
+APP_DIR="${APP_DIR:-/opt/thiyaneswaramma}"
+APP_USER="${APP_USER:-thiyaneswaramma}"
+SERVICE="${SERVICE:-thiyaneswaramma}"
+PORT="${PORT:-3100}"
 KEEP="${KEEP:-3}"
+
+if [[ $EUID -ne 0 ]]; then echo "Run as root (sudo deploy-thiyaneswaramma)."; exit 1; fi
+
+as_app() { sudo -u "$APP_USER" -H "$@"; }
 
 STAMP="$(date +%Y%m%d-%H%M%S)"
 RELEASE="$APP_DIR/releases/$STAMP"
+PREVIOUS="$(readlink -f "$APP_DIR/current" 2>/dev/null || true)"
 
 echo "==> Fetching $BRANCH into $RELEASE"
-mkdir -p "$APP_DIR/releases"
-git clone --depth 1 --branch "$BRANCH" "$REPO" "$RELEASE"
+as_app mkdir -p "$APP_DIR/releases"
+as_app git clone --quiet --depth 1 --branch "$BRANCH" "$REPO" "$RELEASE"
 
 # Optional server-side settings (e.g. NEXT_PUBLIC_SITE_URL) live outside releases.
 if [[ -f "$APP_DIR/.env.production" ]]; then
-  cp "$APP_DIR/.env.production" "$RELEASE/.env.production"
+  install -o "$APP_USER" -g "$APP_USER" -m 640 "$APP_DIR/.env.production" "$RELEASE/.env.production"
 fi
 
 cd "$RELEASE"
 echo "==> Installing dependencies"
-npm ci --no-audit --no-fund
+as_app npm ci --no-audit --no-fund --loglevel=error
 
-echo "==> Building"
-NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS="--max-old-space-size=1536" npm run build
+echo "==> Building (low priority so other apps on this server stay responsive)"
+as_app env NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS="--max-old-space-size=1536" nice -n 10 npm run build
 
 echo "==> Switching to the new release"
 ln -sfn "$RELEASE" "$APP_DIR/current"
-pm2 startOrReload "$APP_DIR/current/deploy/ecosystem.config.cjs" --update-env
-pm2 save >/dev/null
+chown -h "$APP_USER:$APP_USER" "$APP_DIR/current"
+systemctl restart "$SERVICE"
 
 echo "==> Health check"
-for i in {1..20}; do
-  if curl -fsS -o /dev/null "http://127.0.0.1:${APP_PORT:-3100}/en"; then
-    echo "Site is up."
-    break
-  fi
+ok=0
+for _ in $(seq 1 30); do
+  if curl -fsS -o /dev/null "http://127.0.0.1:${PORT}/en"; then ok=1; break; fi
   sleep 1
-  if [[ $i -eq 20 ]]; then echo "Health check failed — see: pm2 logs thiyaneswaramma"; exit 1; fi
 done
+if [[ $ok -ne 1 ]]; then
+  echo "!! New release failed its health check."
+  if [[ -n "$PREVIOUS" && -d "$PREVIOUS" ]]; then
+    echo "!! Rolling back to $PREVIOUS"
+    ln -sfn "$PREVIOUS" "$APP_DIR/current"
+    systemctl restart "$SERVICE"
+  fi
+  echo "See: journalctl -u $SERVICE -n 100"
+  exit 1
+fi
+echo "Site is up on 127.0.0.1:${PORT}."
 
 echo "==> Removing old releases (keeping $KEEP)"
 ls -1dt "$APP_DIR"/releases/* | tail -n +$((KEEP + 1)) | xargs -r rm -rf

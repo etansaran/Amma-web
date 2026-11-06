@@ -1,0 +1,27 @@
+[Unit]
+Description=Siva Sri Thiyaneswar Amma Ashram website (Next.js, localhost:3100)
+After=network.target
+
+[Service]
+Type=simple
+User=thiyaneswaramma
+Group=thiyaneswaramma
+# Goes through the `current` symlink, so every restart runs the newest release.
+WorkingDirectory=/opt/thiyaneswaramma/current/.next/standalone
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3100
+Environment=NEXT_TELEMETRY_DISABLED=1
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+# Keep this site from ever starving other apps on the server.
+MemoryMax=800M
+CPUWeight=50
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
