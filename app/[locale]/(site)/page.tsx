@@ -456,7 +456,7 @@ export default async function HomePage({ params }: Props) {
               icon={Clock}
               eyebrow="Arunachaleswarar temple timings"
               title={site.temple.timings}
-              note="Extended on Pournami and festival days"
+              note={site.temple.timingsNote}
             />
             <InfoCard
               icon={TrainFront}

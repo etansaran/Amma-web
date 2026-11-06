@@ -98,9 +98,13 @@ export const site = {
     views: "6.2 million+",
   },
   temple: {
-    timings: "5:30 AM – 12:30 PM · 3:30 PM – 9:00 PM",
-    morning: "5:30 AM – 12:30 PM",
-    evening: "3:30 PM – 9:00 PM",
+    /** Official HR&CE temple website (annamalaiyar.hrce.tn.gov.in), checked 6 Nov 2026. */
+    timings: "5:30 AM – 8:00 PM",
+    timingsNote: "Closes 7:30 PM on weekends, Pournami, holidays and crowded days",
+    weekend: "5:30 AM – 7:30 PM",
+    officialSite: "https://annamalaiyar.hrce.tn.gov.in/",
+    morning: "5:30 AM – 8:00 PM",
+    evening: "5:30 AM – 7:30 PM",
   },
   dates: {
     karthigaiDeepam: "2026-11-24",
@@ -128,6 +132,9 @@ export const footerVisitLinks = [
   { key: "mounasamy", href: "/mounasamy" },
   { key: "bookVisit", href: "/book-a-visit" },
   { key: "guide", href: "/tiruvannamalai-guide" },
+  { key: "templeGuide", href: "/arunachaleswarar-temple" },
+  { key: "placesToVisit", href: "/places-to-visit-tiruvannamalai" },
+  { key: "siddhars", href: "/siddhars-of-tiruvannamalai" },
   { key: "contact", href: "/contact" },
 ] as const;
 
@@ -164,6 +171,10 @@ export const allRoutes = [
   "/gallery",
   "/contact",
   "/tiruvannamalai-guide",
+  "/arunachaleswarar-temple",
+  "/places-to-visit-tiruvannamalai",
+  "/siddhars-of-tiruvannamalai",
+  "/mouna-swami",
   "/privacy",
   "/terms",
   "/refund-policy",

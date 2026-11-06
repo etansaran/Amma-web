@@ -141,11 +141,12 @@ type SearchChip = {
 const searches: SearchChip[] = [
   { label: "mouna siddhar tiruvannamalai location", href: "/mounasamy/darshan" },
   { label: "mouna siddhar tiruvannamalai contact number", href: "/mounasamy/darshan" },
-  { label: "mouna swami ashram tiruvannamalai", href: "/mounasamy/darshan" },
+  { label: "mouna swami ashram tiruvannamalai", href: "/mouna-swami" },
+  { label: "sri mouna swami peetam", href: "/mouna-swami" },
   { label: "mouna siddhar photos", href: "/gallery" },
   { label: "mouna guru siddhar tiruvannamalai", href: "/mounasamy/guru-shishya" },
   { label: "tiruvannamalai vibhuti siddhar", href: "/mounasamy" },
-  { label: "tiruvannamalai famous siddhar", href: "/tiruvannamalai-guide" },
+  { label: "living siddhar in tiruvannamalai", href: "/siddhars-of-tiruvannamalai" },
   { label: "மௌன சித்தர் திருவண்ணாமலை", href: "/mounasamy", locale: "ta", tamil: true },
   { label: "mouna swami tiruvannamalai telugu", href: "/mounasamy", locale: "te" },
 ];

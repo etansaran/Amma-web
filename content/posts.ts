@@ -54,6 +54,25 @@ export const posts: Post[] = [
           "Temple hours are extended on the day. Check the temple's own notice before you travel.",
         ],
       },
+      { type: "h2", text: "Karthigai Deepam 2026 festival schedule" },
+      {
+        type: "p",
+        text: "The ten-day Karthigai Deepam festival (Thirukarthigai Brahmotsavam) at the Arunachaleswarar temple builds up to the lighting of the lamp. The main days announced for 2026 are below; the temple may adjust times, so confirm locally.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Sunday 15 November: flag hoisting (dwajarohanam) at the golden flagstaff in the morning — the festival begins.",
+          "Saturday 21 November: Maha Ratham — the great chariot procession around the temple streets.",
+          "Tuesday 24 November: Bharani Deepam at about 4 AM in front of the sanctum; Maha Deepam on the summit of Arunachala at about 6 PM.",
+          "25–27 November: theppal (float) festival; 26 November: Swami Girivalam.",
+          "The Maha Deepam keeps burning on the hill for about eleven days.",
+        ],
+      },
+      {
+        type: "p",
+        text: "In the Tamil calendar, Karthigai Deepam 2026 falls on Karthigai 8 (கார்த்திகை 8) of the Parabhava year — please confirm with your own panchangam. The Krittika nakshatra runs from about 2:02 AM to 11:25 PM on 24 November. Devotees who cannot come can make the ghee-pot (gheepot) offering for the Maha Deepam on the temple's official website, annamalaiyar.hrce.tn.gov.in.",
+      },
       { type: "h2", text: "Where to watch the Maha Deepam" },
       {
         type: "p",
@@ -203,16 +222,16 @@ export const posts: Post[] = [
     body: [
       {
         type: "p",
-        text: "Tiruvannamalai temple timings are the first thing most pilgrims look up before a trip. The Arunachaleswarar temple, the great Shiva temple at the foot of Arunachala, opens in two sessions each day: 5:30 AM to 12:30 PM in the morning and 3:30 PM to 9:00 PM in the evening. Hours are extended on Pournami nights and on festival days such as Karthigai Deepam and Maha Shivaratri.",
+        text: "Tiruvannamalai temple timings are the first thing most pilgrims look up before a trip. The Arunachaleswarar temple, the great Shiva temple at the foot of Arunachala, is open for darshan from 5:30 AM to 8:00 PM, according to the temple's official website (annamalaiyar.hrce.tn.gov.in). On Saturdays, Sundays, Pournami, holidays and crowded days it closes at 7:30 PM. Festival days such as Karthigai Deepam follow their own schedule.",
       },
       { type: "h2", text: "Daily timings at a glance" },
       {
         type: "ul",
         items: [
-          "Morning session: 5:30 AM to 12:30 PM.",
-          "Evening session: 3:30 PM to 9:00 PM.",
-          "Pournami and festival days: extended hours, announced by the temple.",
-          "The temple is closed between the two sessions, so plan a morning or an evening darshan.",
+          "Monday to Friday: 5:30 AM to 8:00 PM.",
+          "Saturday, Sunday, Pournami, holidays and crowded days: 5:30 AM to 7:30 PM.",
+          "Entrances: the east Rajagopuram and the north Ammani Amman gopuram.",
+          "Festival days such as Karthigai Deepam: special schedule announced by the temple.",
         ],
       },
       { type: "h2", text: "Pooja schedule" },
@@ -223,7 +242,7 @@ export const posts: Post[] = [
       { type: "h2", text: "Darshan tickets" },
       {
         type: "p",
-        text: "General darshan is free. The temple also issues special darshan tickets at ₹50, ₹100 and ₹200, which shorten the queue on busy days. Availability and the rules for each counter are decided by the temple and can change, so treat these as a guide rather than a promise.",
+        text: "General darshan is free. The ₹50 special darshan ticket was ordered stopped by the HR&CE department in July 2023 so that more devotees could have darshan, and a paid 'break darshan' announced in 2025 had not been confirmed as running when we last checked. Abhishekam is arranged at the temple counter. Before you travel, check the official website, annamalaiyar.hrce.tn.gov.in, or ask at the temple office.",
       },
       { type: "h2", text: "Getting to the temple, and from the temple to the ashram" },
       {
@@ -237,55 +256,6 @@ export const posts: Post[] = [
       {
         type: "p",
         text: "The Tiruvannamalai guide on this site has the quick-answer timings box, the Girivalam calendar and the Deepam section in one place. If you are coming for Mounasamy Siddhar's darshan, the Mounasamy hub tells you the hours at the ashram, which are separate from the temple's.",
-      },
-    ],
-  },
-  {
-    slug: "siddhars-of-tiruvannamalai",
-    title: "Siddhars of Tiruvannamalai: the saints of Arunachala",
-    excerpt:
-      "Why siddhars and sages have made the hill their home, the saints whose ashrams welcome pilgrims, and the silent sadhu at Adi Annamalai today.",
-    category: "Mounasamy",
-    targetKeyword: "tiruvannamalai famous siddhar",
-    publishedAt: "2026-11-02",
-    readMinutes: 6,
-    image: "mounasamyAltar",
-    body: [
-      {
-        type: "p",
-        text: "The siddhars of Tiruvannamalai are as much a part of the town as the hill itself. Arunachala is spoken of in Tamil tradition as Shiva in the form of fire, and for centuries sages, siddhars and silent sadhus have settled on its slopes and along the Girivalam path. This post is a short, respectful introduction for pilgrims: who the well-known saints are, where their ashrams stand, and how to visit without turning a place of sadhana into a sightseeing stop.",
-      },
-      { type: "h2", text: "Why the hill draws siddhars" },
-      {
-        type: "p",
-        text: "A siddhar in the Tamil sense is a realised being who has gone beyond ordinary limits through sadhana. Arunachala, which Maataji calls Thirukailayam itself, has always been a place where such people arrive and simply stay. Some teach; many are silent. Most live simply on the kindness of the town, which is one reason annadhanam, the free meal for sadhus, matters so much here.",
-      },
-      { type: "h2", text: "Saints whose ashrams welcome visitors" },
-      {
-        type: "ul",
-        items: [
-          "Sri Ramana Maharshi, the sage of Arunachala, whose ashram on the Girivalam road is open to all and keeps a meditation hall, library and daily chanting.",
-          "Seshadri Swamigal, the saint who lived in the town's streets a century ago and is remembered for his compassion; his ashram stands near Ramanasramam.",
-          "Yogi Ramsuratkumar, the beggar-saint of the twentieth century, whose ashram and samadhi are at the edge of town.",
-        ],
-      },
-      {
-        type: "p",
-        text: "Each of these ashrams has its own timings and etiquette, and each deserves a visit in its own right rather than a quick stop between temples. Dress simply, keep your voice low, and give the people doing sadhana there the same quiet you would want yourself.",
-      },
-      { type: "h2", text: "Miracles and jeeva samadhi" },
-      {
-        type: "p",
-        text: "Pilgrims often search for siddhar miracles and jeeva samadhi sites in Tiruvannamalai. Stories are plentiful, and devotees say many things. The ashram's view is that the test of a saint is not what is told about them but what their presence does to the mind of the person sitting before them. Go, sit, and see for yourself.",
-      },
-      { type: "h2", text: "A living siddhar at Adi Annamalai" },
-      {
-        type: "p",
-        text: "Among the sadhus of Arunachala today is Mounasamy Siddhar, known across Tamil Nadu as Mouna Siddhar, Mouna Swami or Vibhuti Siddhar. He has kept silence for more than fifteen years, sits before his altar day and night, and lives at Siva Sri Thiyaneswar Amma Ashram, where Maataji is his guru. Darshan is open every day and free; he stands to give darshan from 7 to 8 PM. He has moved from the old Mouna Swami Peetam on Girivalam Road, so follow the directions on this site rather than older pages.",
-      },
-      {
-        type: "p",
-        text: "To read the ashram's own account of Mounasamy, the guru–shishya story and the darshan details, begin at the Mounasamy hub. For planning the rest of your pilgrimage, the Tiruvannamalai guide lists temple timings, Girivalam dates and the town's ashrams.",
       },
     ],
   },

@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     path: "/tiruvannamalai-guide",
     title: "Tiruvannamalai Temple Timings, Deepam 2026 & Girivalam Dates",
     description:
-      "Tiruvannamalai temple timings (5:30 AM–12:30 PM, 3:30–9 PM), Karthigai Deepam 2026 on 24 November, Pournami Girivalam dates 2026–27 with tithi times, route, ashrams and how to reach.",
+      "Tiruvannamalai temple timings (5:30 AM–8 PM), Karthigai Deepam 2026 on 24 November, Pournami Girivalam dates 2026–27 with tithi times, route, ashrams and how to reach.",
     image: images.arunachalaNight,
   });
 }
@@ -73,7 +73,7 @@ const faqs = [
   {
     question: "What are the Tiruvannamalai temple timings?",
     answer:
-      "Arunachaleswarar Temple is open daily from 5:30 AM to 12:30 PM and 3:30 PM to 9:00 PM, with extended hours on Pournami and festival days.",
+      "According to the temple's official website, Arunachaleswarar Temple is open for darshan from 5:30 AM to 8:00 PM, closing at 7:30 PM on Saturdays, Sundays, Pournami, holidays and crowded days. Entry is through the east Rajagopuram and the north Ammani Amman gopuram.",
   },
   {
     question: "When is Karthigai Deepam in 2026?",
@@ -177,7 +177,7 @@ export default async function GuidePage({ params }: Props) {
               icon: Clock,
               eyebrow: "Arunachaleswarar temple timings",
               value: site.temple.timings,
-              note: "Every day; longer on Pournami and festival days",
+              note: "Closes 7:30 PM on weekends, Pournami & crowded days",
             },
             {
               icon: Flame,
@@ -235,26 +235,26 @@ export default async function GuidePage({ params }: Props) {
               </thead>
               <tbody>
                 <tr>
-                  <th scope="row" className={cn(td, "text-left font-normal")}>Morning</th>
+                  <th scope="row" className={cn(td, "text-left font-normal")}>Monday – Friday</th>
                   <td className={td}><strong>{site.temple.morning}</strong></td>
                   <td className={td}>Earliest darshan is the calmest</td>
                 </tr>
                 <tr>
-                  <th scope="row" className={cn(td, "text-left font-normal")}>Evening</th>
+                  <th scope="row" className={cn(td, "text-left font-normal")}>Sat, Sun, Pournami, holidays</th>
                   <td className={td}><strong>{site.temple.evening}</strong></td>
-                  <td className={td}>Crowded after 6 PM on weekends</td>
+                  <td className={td}>Also on crowded days</td>
                 </tr>
                 <tr>
-                  <th scope="row" className={cn(td, "text-left font-normal")}>Pournami &amp; festivals</th>
-                  <td className={td}>Extended hours</td>
-                  <td className={td}>Often open through the night; confirm at the temple</td>
+                  <th scope="row" className={cn(td, "text-left font-normal")}>Entrances</th>
+                  <td className={td}>East Rajagopuram · North Ammani Amman gopuram</td>
+                  <td className={td}>Per the official temple website</td>
                 </tr>
                 <tr>
                   <th scope="row" className={cn(td, "text-left font-normal border-b-0")}>Daily kala poojas</th>
                   <td className={cn(td, "border-b-0")}>
-                    <Placeholder label="Ushakkalam · Kalasanthi · Uchikalam · Sayarakshai · Irandam Kalam · Ardhajamam — times to confirm" />
+                    Ushathkalam 5:30 AM · Kalasanthi 8 AM · Uchikalam 10 AM · Sayarakshai 6 PM · Irandamkalam 8 PM · Ardhajamam 10 PM
                   </td>
-                  <td className={cn(td, "border-b-0")}>Six poojas a day, as in all Saiva temples</td>
+                  <td className={cn(td, "border-b-0")}>Approximate; the temple may change them on festival days</td>
                 </tr>
               </tbody>
             </table>
@@ -277,19 +277,14 @@ export default async function GuidePage({ params }: Props) {
                   <td className={td}>Queue time varies with the day</td>
                 </tr>
                 <tr>
-                  <th scope="row" className={cn(td, "text-left font-normal")}>Special darshan</th>
-                  <td className={td}>₹50</td>
-                  <td rowSpan={3} className={cn(td, "text-ink-2 border-b-0")}>
-                    As listed by travel guides; confirm at the counter
-                  </td>
+                  <th scope="row" className={cn(td, "text-left font-normal")}>Special (₹50) darshan</th>
+                  <td className={td}>Stopped</td>
+                  <td className={td}>Ordered stopped by HR&amp;CE in July 2023; confirm at the counter</td>
                 </tr>
                 <tr>
-                  <th scope="row" className={cn(td, "text-left font-normal")}>Fast-track darshan</th>
-                  <td className={td}>₹100</td>
-                </tr>
-                <tr>
-                  <th scope="row" className={cn(td, "text-left font-normal border-b-0")}>VIP darshan</th>
-                  <td className={cn(td, "border-b-0")}>₹200</td>
+                  <th scope="row" className={cn(td, "text-left font-normal border-b-0")}>VIP / break darshan</th>
+                  <td className={cn(td, "border-b-0")}>Not confirmed</td>
+                  <td className={cn(td, "border-b-0")}>Announced in 2025; check the official site before you travel</td>
                 </tr>
               </tbody>
             </table>
@@ -568,6 +563,17 @@ export default async function GuidePage({ params }: Props) {
             ))}
           </div>
         </Reveal>
+        </div>
+      </section>
+
+      {/* More guides */}
+      <section className="container-site pt-4 pb-2">
+        <div className="card rounded-2xl p-5 md:p-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <p className="eyebrow-gold w-full sm:w-auto">More Tiruvannamalai guides</p>
+          <Link href="/arunachaleswarar-temple" className="link-arrow">Arunachaleswarar Temple: booking &amp; history</Link>
+          <Link href="/places-to-visit-tiruvannamalai" className="link-arrow">Places to visit</Link>
+          <Link href="/siddhars-of-tiruvannamalai" className="link-arrow">Siddhars &amp; jeeva samadhis</Link>
+          <Link href="/blog/karthigai-deepam-2026-tiruvannamalai" className="link-arrow">Karthigai Deepam 2026</Link>
         </div>
       </section>
 

@@ -26,6 +26,8 @@ export function GET() {
 - Annadhanam: free, 365 days; about ${site.annadhanam.dailyPlates} plates a day, about ${site.annadhanam.pournamiPlates} on Pournami nights
 - Rooms available for devotees; advance booking required
 - Motto: ${site.motto} ("${site.mottoEnglish}")
+- Arunachaleswarar Temple darshan (official website annamalaiyar.hrce.tn.gov.in): 5:30 AM – 8:00 PM; 7:30 PM on weekends, Pournami and holidays
+- Mouna Swami / Mouna Siddhar of Tiruvannamalai has moved from Sri Mouna Swami Peetam (Girivalam Road) to this ashram
 - Maataji wrote the lyrics of the song "${site.song.titleLatin}" (Jothi TV, 2024, 6.2M+ views): ${site.song.youtubeUrl}
 
 ## Main pages
@@ -38,6 +40,10 @@ export function GET() {
 - [Teachings and satsang](${u("/teachings")})
 - [Pooja and events calendar](${u("/events")})
 - [Tiruvannamalai guide: temple timings, Girivalam dates, Karthigai Deepam](${u("/tiruvannamalai-guide")})
+- [Arunachaleswarar Temple: timings, official website, booking, tickets, history](${u("/arunachaleswarar-temple")})
+- [Places to visit in Tiruvannamalai](${u("/places-to-visit-tiruvannamalai")})
+- [Siddhars of Tiruvannamalai: jeeva samadhis and the living siddhar](${u("/siddhars-of-tiruvannamalai")})
+- [Mouna Swami of Tiruvannamalai: Sri Mouna Swami Peetam has moved](${u("/mouna-swami")})
 - [Book a visit](${u("/book-a-visit")}) · [Donate](${u("/donate")}) · [Contact](${u("/contact")})
 
 ## Articles

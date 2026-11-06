@@ -23,6 +23,15 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/:locale(en|ta|te|hi)/blog/siddhars-of-tiruvannamalai",
+        destination: "/:locale/siddhars-of-tiruvannamalai",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
