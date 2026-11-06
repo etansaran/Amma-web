@@ -8,10 +8,8 @@ import {
   Flame,
   HandHeart,
   Heart,
-  MapPin,
   Moon,
   Sparkles,
-  Sun,
   TrainFront,
   Users,
   Utensils,
@@ -44,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     path: "/",
     title: "Siva Sri Thiyaneswar Amma Ashram, Tiruvannamalai",
     description:
-      "Ashram of Maataji at Adi Annamalai on the Girivalam path: daily annadhanam, Mounasamy Siddhar darshan, Thiruvasagam, satsang and Pournami pooja. Plan your visit.",
+      "Ashram of Maataji, Sathguru Siva Sri Thiyaneswar Amma, at Adi Annamalai on the Girivalam path: daily annadhanam, Thiruvasagam, satsang and Pournami pooja.",
     absoluteTitle: true,
   });
 }
@@ -251,56 +249,6 @@ export default async function HomePage({ params }: Props) {
             <ArrowLink href="/teachings">Her teachings and books</ArrowLink>
           </div>
         </Reveal>
-      </section>
-
-      {/* Mounasamy */}
-      <section className="bg-sand border-t border-line">
-        <div className="container-site section-pad flex flex-wrap items-center gap-10 md:gap-14">
-          <Reveal className="flex-[0_1_400px] w-full max-w-[400px] mx-auto lg:mx-0">
-            <PhotoFigure
-              image={images.mounasamyGarland}
-              ratio="3/4"
-              position="50% 15%"
-              frame="gold"
-              sizes="(max-width: 768px) 100vw, 400px"
-            />
-          </Reveal>
-          <Reveal delay={0.1} className="flex-[1_1_480px] flex flex-col gap-5">
-            <Eyebrow>Maataji's shishya</Eyebrow>
-            <h2 className="h2">
-              Mounasamy Siddhar — the silent sadhu of Tiruvannamalai — lives here.
-            </h2>
-            <p lang="ta" className="ta text-[20px] md:text-[22px] text-saffron-text">
-              திருவண்ணாமலை மௌன சித்தர் · மௌனசாமி
-            </p>
-            <p className="text-ink-2">
-              Known across Tamil Nadu as Mouna Siddhar, Mouna Swami or Vibhuti Siddhar, Mounasamy
-              has kept a vow of silence for more than fifteen years and sits before his altar day and
-              night without lying down. He is Maataji's shishya: his sadhana was shaped under her
-              guidance, and today he lives at this ashram in her care, giving darshan every day and standing for darshan each evening from 7 to 8 PM.
-            </p>
-            <div className="flex flex-wrap gap-2.5">
-              <span className="chip">
-                <Clock size={14} className="text-saffron-text" aria-hidden /> 15+ years of mouna
-              </span>
-              <span className="chip">
-                <Sun size={14} className="text-saffron-text" aria-hidden /> Darshan every day · free
-              </span>
-              <span className="chip">
-                <MapPin size={14} className="text-saffron-text" aria-hidden /> At Adi Annamalai, Vediyappanur Road
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-3.5 mt-1.5">
-              <Button href="/mounasamy" variant="night">
-                About Mounasamy
-              </Button>
-              <Button href="/mounasamy/darshan" variant="outline-saffron">
-                Darshan: location &amp; timings
-              </Button>
-              <ArrowLink href="/mounasamy/guru-shishya">The guru–shishya story</ArrowLink>
-            </div>
-          </Reveal>
-        </div>
       </section>
 
       {/* Activities */}
