@@ -751,3 +751,65 @@ html.no-motion [data-reveal-item] {
   content: " *";
   color: var(--color-saffron-text);
 }
+
+/* ---- Chant "now playing" bars (components/site/MusicToggle.tsx) ---- */
+.chant-bars i {
+  display: block;
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: bottom;
+  animation: chant-bar 1.1s ease-in-out infinite;
+}
+.chant-bars i:nth-child(2) { animation-delay: 0.2s; }
+.chant-bars i:nth-child(3) { animation-delay: 0.45s; }
+.chant-bars i:nth-child(4) { animation-delay: 0.7s; }
+@keyframes chant-bar {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+/* ---- Launch screen (components/launch/LaunchScreen.tsx) ---- */
+.launch-embers span {
+  position: absolute;
+  bottom: -12px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-gold-light);
+  box-shadow: 0 0 10px 2px rgba(242, 199, 107, 0.6);
+  opacity: 0;
+  animation: ember-rise linear infinite;
+}
+@keyframes ember-rise {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  10% { opacity: 0.9; }
+  100% { transform: translate3d(24px, -105vh, 0); opacity: 0; }
+}
+.launch-petals span {
+  position: absolute;
+  top: -40px;
+  border-radius: 60% 0 60% 0;
+  opacity: 0;
+  animation: petal-fall linear infinite;
+}
+.launch-petals .is-saffron { background: #f0924f; }
+.launch-petals .is-gold { background: var(--color-gold-light); }
+.launch-petals .is-rose { background: #e4708a; }
+@keyframes petal-fall {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 1; }
+  100% { transform: translate3d(-60px, 110vh, 0) rotate(540deg); opacity: 0.85; }
+}
+.launch-reveal {
+  animation: rise-soft 0.6s var(--ease-out-soft) both;
+}
+.launch-shake {
+  animation: launch-shake 0.4s ease-in-out;
+}
+@keyframes launch-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-10px); }
+  40%, 80% { transform: translateX(10px); }
+}

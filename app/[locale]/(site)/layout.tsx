@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { MobileBar } from "@/components/site/MobileBar";
 import { LanguageWelcomeGate } from "@/components/site/LanguageWelcomeGate";
 import { BackToTop } from "@/components/site/BackToTop";
+import { MusicToggle } from "@/components/site/MusicToggle";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { organizationSchema, placeOfWorshipSchema } from "@/lib/schema";
@@ -26,6 +27,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       <SiteFooter />
       <MobileBar />
       <BackToTop />
+      <MusicToggle />
       <LanguageWelcomeGate />
       <RevealObserver />
     </>

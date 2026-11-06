@@ -36,7 +36,9 @@
     "placeholderNote": "To be confirmed by the ashram office",
     "bookVisitShort": "Book a visit",
     "backToTop": "Back to top",
-    "fieldError": "Please check this field."
+    "fieldError": "Please check this field.",
+    "chantPlay": "Play the Om Namah Shivaya chant",
+    "chantPause": "Pause the chant"
   },
   "Announcement": {
     "text": "Karthigai Deepam · Tuesday 24 November 2026 · Pournami Girivalam the same night",
