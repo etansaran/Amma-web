@@ -31,6 +31,8 @@ import { PhotoFigure } from "@/components/ui/PhotoFigure";
 import { IconCircle } from "@/components/ui/IconCircle";
 import { Placeholder } from "@/components/ui/Placeholder";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
+import { FAQ } from "@/components/ui/FAQ";
+import { maatajiFaqs } from "@/content/faqs";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -410,6 +412,19 @@ export default async function MaatajiPage({ params }: Props) {
           <p className="font-display text-[20px]">“All that exists is Shiva.”</p>
           <p className="text-sm text-ink-2">From the ashram's seal.</p>
         </Reveal>
+      </section>
+
+      {/* Questions people ask (direct answers for search and AI answers) */}
+      <section className="bg-sand border-t border-line">
+        <div className="container-site section-pad flex flex-wrap gap-8 md:gap-10">
+          <Reveal className="flex-[1_1_300px] min-w-0">
+            <Eyebrow>Questions people ask</Eyebrow>
+            <h2 className="h2 mt-3">About Thiyaneswar Amma.</h2>
+          </Reveal>
+          <Reveal delay={0.1} className="flex-[2_1_560px] min-w-0">
+            <FAQ items={maatajiFaqs} />
+          </Reveal>
+        </div>
       </section>
     </>
   );

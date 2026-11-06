@@ -36,6 +36,8 @@ import { IconCircle } from "@/components/ui/IconCircle";
 import { Placeholder } from "@/components/ui/Placeholder";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import { site } from "@/lib/site";
+import { FAQ } from "@/components/ui/FAQ";
+import { ashramFaqs } from "@/content/faqs";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -376,6 +378,19 @@ export default async function AshramPage({ params }: Props) {
             />
           </RevealItem>
         </RevealGroup>
+      </section>
+
+      {/* Questions people ask (direct answers for search and AI answers) */}
+      <section className="bg-sand border-t border-line">
+        <div className="container-site section-pad flex flex-wrap gap-8 md:gap-10">
+          <Reveal className="flex-[1_1_300px] min-w-0">
+            <Eyebrow>Questions people ask</Eyebrow>
+            <h2 className="h2 mt-3">About the ashram.</h2>
+          </Reveal>
+          <Reveal delay={0.1} className="flex-[2_1_560px] min-w-0">
+            <FAQ items={ashramFaqs} />
+          </Reveal>
+        </div>
       </section>
 
       {/* CTA band */}

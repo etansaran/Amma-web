@@ -9,7 +9,7 @@ import { BackToTop } from "@/components/site/BackToTop";
 import { MusicToggle } from "@/components/site/MusicToggle";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { organizationSchema, placeOfWorshipSchema } from "@/lib/schema";
+import { organizationSchema, placeOfWorshipSchema, websiteSchema } from "@/lib/schema";
 
 export default async function SiteLayout({ children }: { children: ReactNode }) {
   const t = await getTranslations("Common");
@@ -18,7 +18,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       <a href="#main" className="skip-link">
         {t("skipToContent")}
       </a>
-      <JsonLd data={[organizationSchema(), placeOfWorshipSchema()]} />
+      <JsonLd data={[websiteSchema(), organizationSchema(), placeOfWorshipSchema()]} />
       <AnnouncementStrip />
       <SiteHeader />
       <main id="main" tabIndex={-1} className="flex-1 pb-[78px] md:pb-0 outline-none">

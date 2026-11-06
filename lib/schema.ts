@@ -26,10 +26,48 @@ export function organizationSchema(): JsonLd {
     foundingDate: site.trust.founded,
     founder: { "@id": `${site.url}/#maataji` },
     slogan: site.motto,
+    description:
+      "Charitable trust and ashram of Sathguru Siva Sri Thiyaneswar Amma (Maataji) at Adi Annamalai on the Girivalam path, Tiruvannamalai: daily annadhanam for sadhus, Shiva pooja, Thiruvasagam and Kailaya Vathiyam classes, satsang, and home of Mounasamy Siddhar.",
     telephone: site.phone,
     email: site.email,
     address: postalAddress,
+    location: { "@id": `${site.url}/#place` },
+    areaServed: "Tiruvannamalai, Tamil Nadu, India",
+    knowsAbout: [
+      "Annadhanam",
+      "Shiva bhakti",
+      "Thiruvasagam",
+      "Kailaya Vathiyam",
+      "Sivayogam",
+      "Girivalam",
+      "Karthigai Deepam",
+      "Arunachala",
+    ],
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        telephone: site.phone,
+        email: site.email,
+        contactType: "ashram office",
+        availableLanguage: ["Tamil", "English", "Telugu", "Hindi"],
+      },
+    ],
     sameAs: [site.social.facebook, site.social.instagram, site.social.youtube],
+  };
+}
+
+/** The website as an entity (helps search engines tie pages to the organisation). */
+export function websiteSchema(): JsonLd {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${site.url}/#website`,
+    name: site.name,
+    alternateName: ["Thiyaneswar Amma Ashram", "thiyaneswaramma.org"],
+    url: site.url,
+    inLanguage: ["en-IN", "ta-IN", "te-IN", "hi-IN"],
+    publisher: { "@id": `${site.url}/#organization` },
+    about: [{ "@id": `${site.url}/#maataji` }, { "@id": `${site.url}/#place` }],
   };
 }
 
@@ -79,6 +117,13 @@ export function maatajiPersonSchema(): JsonLd {
       "Founder of Siva Sri Thiyaneswar Amma Ashram at Adi Annamalai, Tiruvannamalai; Shiva bhakta, teacher of Thiruvasagam, writer of songs and books, and guru of Mounasamy Siddhar.",
     image: absoluteUrl(images.maatajiPortrait.src),
     jobTitle: "Spiritual teacher and founder",
+    knowsAbout: ["Shiva bhakti", "Thiruvasagam", "Annadhanam", "Sivayogam", "Arunachala"],
+    homeLocation: { "@id": `${site.url}/#place` },
+    subjectOf: {
+      "@type": "VideoObject",
+      name: `${site.song.titleLatin} — lyrics by Thiyaneswar Amma`,
+      url: site.song.youtubeUrl,
+    },
     affiliation: { "@id": `${site.url}/#organization` },
     worksFor: { "@id": `${site.url}/#organization` },
     url: absoluteUrl("/en/maataji"),
