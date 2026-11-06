@@ -14,6 +14,8 @@ Environment=PORT=3100
 Environment=NEXT_TELEMETRY_DISABLED=1
 ExecStart=/usr/bin/node server.js
 Restart=always
+# Node exits with 143 on SIGTERM during a normal stop/restart.
+SuccessExitStatus=143
 RestartSec=5
 # Keep this site from ever starving other apps on the server.
 MemoryMax=800M
