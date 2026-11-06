@@ -191,13 +191,14 @@ export default async function MaatajiPage({ params }: Props) {
         }
         asideClassName="flex-[0_1_380px]"
         aside={
-          <div className="animate-halo border-[3px] border-gold rounded-t-[190px] rounded-b-[26px] p-2.5 bg-white">
+          <div className="relative animate-halo border-[3px] border-gold rounded-t-[190px] rounded-b-[26px] p-2.5 bg-white">
             <Image
               src={images.maatajiPortrait.src}
               alt="Maataji in saffron, rudraksha and a red bindi, looking at the camera"
               width={330}
               height={410}
-              priority
+              loading="eager"
+              fetchPriority="high"
               sizes="(max-width: 768px) 240px, 330px"
               className="w-[240px] h-[300px] md:w-[330px] md:h-[410px] object-cover object-[50%_20%] rounded-t-[180px] rounded-b-[18px]"
             />

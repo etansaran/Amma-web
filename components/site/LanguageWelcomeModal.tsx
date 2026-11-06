@@ -99,7 +99,7 @@ export function LanguageWelcomeModal() {
             src={images.arunachalaNight.src}
             alt=""
             fill
-            priority
+            loading="eager"
             sizes="100vw"
             className="object-cover opacity-35 blur-[2px]"
             aria-hidden

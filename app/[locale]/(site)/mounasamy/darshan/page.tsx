@@ -159,7 +159,7 @@ export default async function MounasamyDarshanPage({ params }: Props) {
           alt=""
           aria-hidden
           fill
-          priority
+          loading="eager"
           fetchPriority="high"
           sizes="100vw"
           className="object-cover opacity-35 animate-drift"

@@ -57,7 +57,8 @@ export function PageHero({
             src={images.arunachalaNight.src}
             alt=""
             fill
-            priority
+            loading="eager"
+            fetchPriority="high"
             sizes="100vw"
             className="object-cover opacity-50 animate-drift"
             aria-hidden

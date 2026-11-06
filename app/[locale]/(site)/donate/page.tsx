@@ -64,7 +64,8 @@ export default async function DonatePage({ params }: Props) {
           alt=""
           aria-hidden
           fill
-          priority
+          loading="eager"
+          fetchPriority="high"
           sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover object-[50%_30%] opacity-50 lg:left-auto! lg:w-1/2!"
         />

@@ -4,7 +4,7 @@ import { AnnouncementStrip } from "@/components/site/AnnouncementStrip";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { MobileBar } from "@/components/site/MobileBar";
-import { LanguageWelcomeModal } from "@/components/site/LanguageWelcomeModal";
+import { LanguageWelcomeGate } from "@/components/site/LanguageWelcomeGate";
 import { BackToTop } from "@/components/site/BackToTop";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { JsonLd } from "@/components/ui/JsonLd";
@@ -26,7 +26,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       <SiteFooter />
       <MobileBar />
       <BackToTop />
-      <LanguageWelcomeModal />
+      <LanguageWelcomeGate />
       <RevealObserver />
     </>
   );

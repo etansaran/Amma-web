@@ -89,7 +89,7 @@ export function SiteHeader() {
             alt={images.logo.alt}
             width={54}
             height={54}
-            priority
+            loading="eager"
             className={cn("w-10 h-10 object-contain transition-[width,height] duration-300", scrolled ? "lg:w-11 lg:h-11" : "lg:w-[54px] lg:h-[54px]")}
           />
           <span className="flex flex-col leading-[1.15] min-w-0">

@@ -68,7 +68,8 @@ export function PhotoFigure({
           alt={alt ?? image.alt}
           width={image.width}
           height={image.height}
-          priority={priority}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           sizes={sizes}
           className={cn(
             "w-full h-full object-cover",

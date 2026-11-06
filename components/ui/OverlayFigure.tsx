@@ -57,7 +57,8 @@ export function OverlayFigure({
         src={image.src}
         alt={alt ?? image.alt}
         fill
-        priority={priority}
+        loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
         sizes={sizes}
         className="object-cover"
         style={{ objectPosition: position }}

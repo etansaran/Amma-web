@@ -217,7 +217,7 @@ export default async function AshramPage({ params }: Props) {
           alt=""
           aria-hidden
           fill
-          priority
+          loading="eager"
           fetchPriority="high"
           sizes="100vw"
           className="object-cover opacity-70 animate-drift"

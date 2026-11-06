@@ -236,7 +236,7 @@ export default async function MounasamyPage({ params }: Props) {
         }
         aside={
           <>
-            <div className="animate-halo border-[3px] border-gold rounded-[28px] p-2.5 bg-white/5 w-[260px] md:w-[340px]">
+            <div className="relative animate-halo border-[3px] border-gold rounded-[28px] p-2.5 bg-white/5 w-[260px] md:w-[340px]">
               <PhotoFigure
                 image={images.mounasamyFlame}
                 alt="Mounasamy Siddhar, ash-covered and garlanded, holding up a lit deepam lamp"

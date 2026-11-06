@@ -134,7 +134,7 @@ export default async function HomePage({ params }: Props) {
           alt=""
           aria-hidden
           fill
-          priority
+          loading="eager"
           fetchPriority="high"
           sizes="100vw"
           className="object-cover opacity-60 animate-drift"
@@ -176,13 +176,14 @@ export default async function HomePage({ params }: Props) {
             </ul>
           </Reveal>
           <Reveal immediate delay={0.15} className="shrink-0 flex flex-col items-center gap-3 md:gap-4">
-            <div className="animate-halo border-2 md:border-[3px] border-gold rounded-t-[200px] rounded-b-[28px] p-2 md:p-2.5 bg-night/35">
+            <div className="relative animate-halo border-2 md:border-[3px] border-gold rounded-t-[200px] rounded-b-[28px] p-2 md:p-2.5 bg-night/35">
               <Image
                 src={images.maatajiThrone.src}
                 alt={images.maatajiThrone.alt}
                 width={340}
                 height={440}
-                priority
+                loading="eager"
+                fetchPriority="high"
                 sizes="(max-width: 640px) 168px, (max-width: 1024px) 260px, 340px"
                 className="w-[168px] h-[214px] sm:w-[200px] sm:h-[260px] md:w-[260px] md:h-[336px] lg:w-[340px] lg:h-[440px] object-cover object-[50%_20%] rounded-t-[188px] rounded-b-[20px]"
               />

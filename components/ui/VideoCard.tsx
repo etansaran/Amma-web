@@ -58,7 +58,8 @@ export function VideoCard({
             src={poster.src}
             alt=""
             fill
-            priority={priority}
+            loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
             sizes="(max-width: 768px) 100vw, 640px"
             className="object-cover saturate-[1.05] transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.03]"
             style={{ objectPosition: posterPosition }}
