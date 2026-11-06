@@ -5,6 +5,8 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Self-hosted on the VPS: a lean .next/standalone server (see docs/DEPLOY-VPS.md).
+  output: "standalone",
   poweredByHeader: false,
   devIndicators: false,
   images: {

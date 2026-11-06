@@ -12,13 +12,15 @@ npm run dev        # http://localhost:3000
 ```
 
 ```bash
-npm run build      # production build (all pages are prerendered as static HTML)
-npm run start
+npm run build      # production build: static pages + a standalone server in .next/standalone
+npm run start:prod # run that server (PORT=3100 HOSTNAME=127.0.0.1 on the VPS)
 ```
+
+Hosting: your Hostinger VPS (Nginx + PM2). Setup, HTTPS and updates are in [docs/DEPLOY-VPS.md](docs/DEPLOY-VPS.md).
 
 Quality gates: `npm run typecheck`, `npm run lint`.
 
-Set `NEXT_PUBLIC_SITE_URL` (see `.env.example`) to the live domain before launch — it drives canonical links, hreflang, the sitemap and JSON-LD.
+The site address is `https://thiyaneswaramma.org` (override with `NEXT_PUBLIC_SITE_URL`, see `.env.example`). It drives canonical links, hreflang, the sitemap and JSON-LD.
 
 ## What is here
 
