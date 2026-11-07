@@ -15,7 +15,7 @@ import { PhotoFigure } from "@/components/ui/PhotoFigure";
 import { Button } from "@/components/ui/Button";
 import { FAQ } from "@/components/ui/FAQ";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
-import { JumpLinks, LawrenceVisitCard, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
+import { GuideByline, JumpLinks, LawrenceVisitCard, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -190,6 +190,7 @@ export default async function SiddharsPage({ params }: Props) {
             Idaikkadar — and today, Mounasamy Siddhar (Mouna Siddhar) at Adi Annamalai.
           </QuickAnswer>
         </Reveal>
+        <GuideByline checked="2026-11-06" className="mt-4" />
       </section>
 
       <section id="living" className="container-site section-pad flex flex-wrap items-center gap-8 md:gap-12 scroll-mt-24">

@@ -30,7 +30,7 @@ import { FAQ } from "@/components/ui/FAQ";
 import { VideoCard } from "@/components/ui/VideoCard";
 import { FacebookIcon, InstagramIcon, WhatsappIcon, XIcon, YoutubeIcon } from "@/components/ui/BrandIcons";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
-import { JumpLinks, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
+import { GuideByline, JumpLinks, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
 import { SocialEmbed } from "@/components/guide/SocialEmbed";
 
 type Props = { params: Promise<{ locale: Locale }> };
@@ -255,6 +255,7 @@ export default async function LawrenceMounaSiddharPage({ params }: Props) {
             Darshan is free every day; he stands for darshan {site.mounasamyStanding}. Office: {site.phone}.
           </QuickAnswer>
         </Reveal>
+        <GuideByline checked="2026-11-07" className="mt-4" />
       </section>
 
       <section id="story" className="container-site section-pad flex flex-wrap items-start gap-8 md:gap-12 scroll-mt-24">

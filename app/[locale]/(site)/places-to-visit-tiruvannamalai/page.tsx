@@ -25,8 +25,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { IconCircle } from "@/components/ui/IconCircle";
 import { FAQ } from "@/components/ui/FAQ";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
-import { AshramStopCard, JumpLinks, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
-import { cn } from "@/lib/cn";
+import { AshramStopCard, GuideByline, JumpLinks, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
+import { PlaceCard, type Place } from "@/components/guide/PlaceCard";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -43,16 +43,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     image: images.girivalamWalk,
   });
 }
-
-type Place = {
-  name: string;
-  tamil: string;
-  text: string;
-  where: string;
-  visit?: string;
-  ours?: boolean;
-  link?: { href: string; label: string };
-};
 
 const inTown: Place[] = [
   {
@@ -77,6 +67,7 @@ const inTown: Place[] = [
     text: "The ashram of Ramana Maharshi on Chengam Road at the foot of the hill, with his samadhi hall and the old hall where he sat. Vedic chanting at 8 AM and 5 PM.",
     where: "Chengam Road, on the Girivalam path",
     visit: "5:30 AM – 8:30 PM · samadhi hall closed 11 AM – 2 PM · free",
+    link: { href: "/ramana-ashram-tiruvannamalai", label: "Ramana Ashram visitor guide" },
   },
   {
     name: "Virupaksha Cave and Skandashram",
@@ -102,6 +93,7 @@ const inTown: Place[] = [
     tamil: "ஆதி அண்ணாமலையார் கோயில்",
     text: "On the Girivalam path on the far side of the hill, between the Varuna and Vayu lingams. Tradition holds this temple to be older than the main one; Appar sang of it, and it is linked with Manikkavasagar's Thiruvembavai.",
     where: "Adi Annamalai, about 7 km round the path",
+    link: { href: "/temples-in-tiruvannamalai#girivalam", label: "Every temple on the path" },
   },
   {
     name: "Siva Sri Thiyaneswar Amma Ashram — our ashram",
@@ -187,43 +179,6 @@ const faqs = [
   },
 ];
 
-function PlaceCard({ p, i }: { p: Place; i: number }) {
-  return (
-    <article
-      className={cn(
-        "rounded-2xl p-5 md:p-6 flex flex-col gap-2.5 h-full",
-        p.ours ? "bg-night text-on-night border border-gold/50" : "card card-hover",
-      )}
-    >
-      <div className="flex items-start gap-3">
-        <span
-          className={cn(
-            "w-9 h-9 rounded-full inline-flex items-center justify-center font-display text-[17px] shrink-0",
-            p.ours ? "bg-saffron text-ink" : "bg-sand text-saffron-text",
-          )}
-          aria-hidden
-        >
-          {i + 1}
-        </span>
-        <div className="min-w-0">
-          <h3 className={cn("text-[20px] md:text-[21px] leading-snug", p.ours && "text-on-night-head")}>{p.name}</h3>
-          <p lang="ta" className={cn("ta text-[15px]", p.ours ? "text-gold-light" : "text-saffron-text")}>
-            {p.tamil}
-          </p>
-        </div>
-      </div>
-      <p className={cn("text-[15px]", p.ours ? "text-on-night-body" : "text-ink-2")}>{p.text}</p>
-      <p className={cn("text-[13px] font-semibold", p.ours ? "text-gold-light" : "text-gold-text")}>{p.where}</p>
-      {p.visit ? <p className={cn("text-[13px]", p.ours ? "text-on-night-2" : "text-ink-2")}>{p.visit}</p> : null}
-      {p.link ? (
-        <Link href={p.link.href} className={cn("mt-auto", p.ours ? "link-arrow-gold" : "link-arrow")}>
-          {p.link.label} →
-        </Link>
-      ) : null}
-    </article>
-  );
-}
-
 const practical: { icon: LucideIcon; title: string; text: string }[] = [
   { icon: Sun, title: "Best time", text: "December–February is coolest. Pournami nights and Karthigai Deepam are special but very crowded — book rooms early." },
   { icon: Plane, title: "By air", text: "Chennai airport is about 175 km by road (3.5–4.5 hours). Bengaluru airport is the other option." },
@@ -300,6 +255,7 @@ export default async function PlacesPage({ params }: Props) {
             Siddhar. For day trips: Sathanur Dam, Gingee Fort, Parvathamalai, Padavedu and the Javadhu Hills.
           </QuickAnswer>
         </Reveal>
+        <GuideByline checked="2026-11-06" className="mt-4" />
       </section>
 
       <section id="in-town" className="container-site section-pad flex flex-col gap-8 scroll-mt-24">

@@ -1,10 +1,25 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
-import { ArrowRight, CalendarCheck, Flame, MapPin, Navigation, Newspaper, Utensils, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  CalendarCheck,
+  Clock,
+  Flame,
+  Globe,
+  MapPin,
+  Navigation,
+  Newspaper,
+  Plane,
+  Stamp,
+  Utensils,
+  Zap,
+} from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { site } from "@/lib/site";
 import { images } from "@/lib/images";
 import { cn } from "@/lib/cn";
+import { WhatsappIcon } from "@/components/ui/BrandIcons";
 
 /**
  * Building blocks for the search-guide pages (temple, siddhars, places, Mouna
@@ -179,5 +194,117 @@ export function LawrenceVisitCard({ className }: { className?: string }) {
       </span>
       <ArrowRight size={18} className="text-saffron-text shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
     </Link>
+  );
+}
+
+/** Format an ISO date (YYYY-MM-DD) as "7 November 2026". */
+function longDate(iso: string) {
+  return new Date(`${iso}T00:00:00+05:30`).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  });
+}
+
+/**
+ * Who wrote this guide and when its facts were last checked — the trust line
+ * readers (and search engines) look for on travel and pilgrimage advice.
+ */
+export function GuideByline({ checked, className }: { checked: string; className?: string }) {
+  return (
+    <p
+      className={cn(
+        "flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-ink-2 border-t border-line pt-3",
+        className,
+      )}
+    >
+      <BadgeCheck size={16} className="text-saffron-text shrink-0" aria-hidden />
+      <span>
+        Written by the {site.shortName} team, who live on the Girivalam path in Tiruvannamalai. Facts
+        checked against official sources on <time dateTime={checked}>{longDate(checked)}</time>.
+      </span>
+      <Link href="/contact" className="font-semibold text-saffron-text underline-offset-2 hover:underline">
+        Report a correction
+      </Link>
+    </p>
+  );
+}
+
+/** Practical notes for devotees travelling from the USA, UK, Gulf, Singapore and Malaysia. */
+export function AbroadVisitors({ id = "from-abroad" }: { id?: string }) {
+  const items: { icon: typeof Plane; title: string; text: ReactNode }[] = [
+    {
+      icon: Plane,
+      title: "Fly into Chennai or Bengaluru",
+      text: "Chennai airport (MAA) is about 175 km away — roughly 4 hours by taxi. Bengaluru (BLR) is about 200 km via Krishnagiri. Both have direct flights from Singapore, Kuala Lumpur and Dubai; from the UK and USA most journeys have one stop.",
+    },
+    {
+      icon: Stamp,
+      title: "Visa",
+      text: (
+        <>
+          Indian passport holders and OCI cardholders need no visa. Most other visitors — including US,
+          UK, Singapore and Malaysian citizens — can apply for an Indian e-Visa on the official site,{" "}
+          <a
+            href="https://indianvisaonline.gov.in/evisa/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2"
+          >
+            indianvisaonline.gov.in
+          </a>
+          . Apply only there, not through agents.
+        </>
+      ),
+    },
+    {
+      icon: Clock,
+      title: "Pournami is in Indian time",
+      text: "Girivalam and Pournami dates follow the full moon in India Standard Time (UTC+5:30). Plan your flights so you arrive the day before.",
+    },
+    {
+      icon: Globe,
+      title: "Best season",
+      text: "December to February is cool and dry. Karthigai Deepam (November–December) and Pournami nights draw very large crowds — book rooms well ahead.",
+    },
+  ];
+  return (
+    <section id={id} className="bg-sand border-y border-line scroll-mt-24">
+      <div className="container-site section-pad flex flex-col gap-7">
+        <div className="flex flex-col gap-3 max-w-[680px]">
+          <p className="eyebrow-gold">Coming from abroad</p>
+          <h2 className="h2">Visiting Tiruvannamalai from the USA, UK, Dubai, Singapore or Malaysia.</h2>
+          <p className="text-ink-2">
+            Many devotees of Arunachala live overseas. Here is what they ask us most before they travel.
+          </p>
+        </div>
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {items.map((i) => (
+            <li key={i.title} className="card rounded-2xl p-5 flex flex-col gap-2.5">
+              <span className="icon-circle" aria-hidden>
+                <i.icon size={20} />
+              </span>
+              <h3 className="text-[18px] leading-snug">{i.title}</h3>
+              <p className="text-[15px] text-ink-2">{i.text}</p>
+            </li>
+          ))}
+        </ul>
+        <div className="card rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-[20px] leading-snug text-ink">
+              Planning from overseas? Message the ashram on WhatsApp.
+            </p>
+            <p className="text-sm text-ink-2 mt-1">
+              We answer in English and Tamil, and can help with rooms at the ashram (book in advance), darshan timings
+              and Pournami dates.
+            </p>
+          </div>
+          <a href={site.whatsappHref} target="_blank" rel="noopener noreferrer" className="btn btn-saffron shrink-0">
+            <WhatsappIcon size={18} /> {site.whatsapp}
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }

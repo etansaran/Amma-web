@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { FAQ } from "@/components/ui/FAQ";
 import { WhatsappIcon } from "@/components/ui/BrandIcons";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
-import { JumpLinks, LawrenceVisitCard, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
+import { GuideByline, JumpLinks, LawrenceVisitCard, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -137,6 +137,7 @@ export default async function MounaSwamiPage({ params }: Props) {
             {site.mounasamyStanding}. Office: {site.phone}.
           </QuickAnswer>
         </Reveal>
+        <GuideByline checked="2026-11-06" className="mt-4" />
         <Reveal className="mt-4">
           <LawrenceVisitCard />
         </Reveal>

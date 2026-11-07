@@ -100,7 +100,7 @@ export const site = {
   temple: {
     /** Official HR&CE temple website (annamalaiyar.hrce.tn.gov.in), checked 6 Nov 2026. */
     timings: "5:30 AM – 8:00 PM",
-    timingsNote: "Closes 7:30 PM on weekends, Pournami, holidays and crowded days",
+    timingsNote: "Darshan until 7:30 PM on weekends, Pournami, holidays and crowded days",
     weekend: "5:30 AM – 7:30 PM",
     officialSite: "https://annamalaiyar.hrce.tn.gov.in/",
     morning: "5:30 AM – 8:00 PM",
@@ -176,6 +176,9 @@ export const allRoutes = [
   "/siddhars-of-tiruvannamalai",
   "/mouna-swami",
   "/raghava-lawrence-mouna-siddhar",
+  "/temples-in-tiruvannamalai",
+  "/ashrams-in-tiruvannamalai",
+  "/ramana-ashram-tiruvannamalai",
   "/privacy",
   "/terms",
   "/refund-policy",

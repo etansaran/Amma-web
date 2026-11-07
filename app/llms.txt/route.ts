@@ -26,7 +26,7 @@ export function GET() {
 - Annadhanam: free, 365 days; about ${site.annadhanam.dailyPlates} plates a day, about ${site.annadhanam.pournamiPlates} on Pournami nights
 - Rooms available for devotees; advance booking required
 - Motto: ${site.motto} ("${site.mottoEnglish}")
-- Arunachaleswarar Temple darshan (official website annamalaiyar.hrce.tn.gov.in): 5:30 AM – 8:00 PM; 7:30 PM on weekends, Pournami and holidays
+- Arunachaleswarar Temple darshan (official website annamalaiyar.hrce.tn.gov.in): 5:30 AM – 8:00 PM; darshan until 7:30 PM on weekends, Pournami, holidays and crowded days
 - Mouna Swami / Mouna Siddhar of Tiruvannamalai has moved from Sri Mouna Swami Peetam (Girivalam Road) to this ashram
 - Actor Raghava Lawrence visited Mounasamy Siddhar at the ashram with his mother and family on his birthday, 29 October 2026, and shared the visit on his official Instagram, Facebook and X accounts (4–5 November 2026), asking visitors to Tiruvannamalai to take Mouna Siddhar's blessings
 - Maataji wrote the lyrics of the song "${site.song.titleLatin}" (Jothi TV, 2024, 6.2M+ views): ${site.song.youtubeUrl}
@@ -42,6 +42,9 @@ export function GET() {
 - [Pooja and events calendar](${u("/events")})
 - [Tiruvannamalai guide: temple timings, Girivalam dates, Karthigai Deepam](${u("/tiruvannamalai-guide")})
 - [Arunachaleswarar Temple: timings, official website, booking, tickets, history](${u("/arunachaleswarar-temple")})
+- [Temples in Tiruvannamalai: Annamalaiyar, Adi Annamalai, the eight Girivalam lingams in order](${u("/temples-in-tiruvannamalai")})
+- [Ashrams in Tiruvannamalai: list with timings, rooms and free food](${u("/ashrams-in-tiruvannamalai")})
+- [Ramana Ashram (Sri Ramanasramam) visitor guide: timings, rooms, etiquette — independent guide](${u("/ramana-ashram-tiruvannamalai")})
 - [Places to visit in Tiruvannamalai](${u("/places-to-visit-tiruvannamalai")})
 - [Siddhars of Tiruvannamalai: jeeva samadhis and the living siddhar](${u("/siddhars-of-tiruvannamalai")})
 - [Mouna Swami of Tiruvannamalai: Sri Mouna Swami Peetam has moved](${u("/mouna-swami")})

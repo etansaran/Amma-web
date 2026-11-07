@@ -29,10 +29,10 @@ import { ArrowLink } from "@/components/ui/ArrowLink";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PhotoFigure } from "@/components/ui/PhotoFigure";
-import { Placeholder } from "@/components/ui/Placeholder";
 import { FAQ } from "@/components/ui/FAQ";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import { cn } from "@/lib/cn";
+import { AbroadVisitors, GuideByline } from "@/components/guide/GuideBits";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -41,9 +41,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildMetadata({
     locale,
     path: "/tiruvannamalai-guide",
-    title: "Tiruvannamalai Temple Timings, Deepam 2026 & Girivalam Dates",
+    title: "Tiruvannamalai Travel Guide: Temple Timings, Deepam, Girivalam",
     description:
-      "Tiruvannamalai temple timings (5:30 AM–8 PM), Karthigai Deepam 2026 on 24 November, Pournami Girivalam dates 2026–27 with tithi times, route, ashrams and how to reach.",
+      "Tiruvannamalai temple timings (5:30 AM–8 PM), Karthigai Deepam 2026 on 24 November, Pournami Girivalam dates 2026–27 with tithi times, route, ashrams, and how to reach — including from abroad.",
     image: images.arunachalaNight,
   });
 }
@@ -54,6 +54,7 @@ const onThisPage = [
   { href: "#calendar", label: "Girivalam dates 2026–27" },
   { href: "#route", label: "Girivalam route" },
   { href: "#reach", label: "How to reach" },
+  { href: "#from-abroad", label: "Visiting from abroad" },
   { href: "#ashrams", label: "Ashrams" },
   { href: "#faq", label: "FAQ" },
 ];
@@ -177,7 +178,7 @@ export default async function GuidePage({ params }: Props) {
               icon: Clock,
               eyebrow: "Arunachaleswarar temple timings",
               value: site.temple.timings,
-              note: "Closes 7:30 PM on weekends, Pournami & crowded days",
+              note: "Darshan until 7:30 PM on weekends, Pournami & crowded days",
             },
             {
               icon: Flame,
@@ -207,6 +208,7 @@ export default async function GuidePage({ params }: Props) {
             </RevealItem>
           ))}
         </RevealGroup>
+        <GuideByline checked="2026-11-07" className="mt-5" />
       </section>
 
       {/* Temple timings */}
@@ -321,7 +323,7 @@ export default async function GuidePage({ params }: Props) {
               <div className="border border-night-line-2 rounded-[14px] p-4">
                 <p className="font-display text-[24px] text-gold-light">10 days</p>
                 <p className="mt-0.5 text-sm text-on-night-2">
-                  Brahmotsavam before Deepam <Placeholder label="dates to confirm" />
+                  Brahmotsavam before Deepam · flag hoisting Sun 15 Nov, Maha Ratham Sat 21 Nov
                 </p>
               </div>
             </div>
@@ -402,8 +404,7 @@ export default async function GuidePage({ params }: Props) {
         <Reveal>
           <p className="text-[13px] text-ink-2 flex flex-wrap items-center gap-1.5">
             Other 2027 festivals: Maha Shivaratri — Saturday 6 March 2027 · Thiruvadhirai 2026 —
-            Thursday 24 December 2026 · Karthigai Deepam 2027 —{" "}
-            <Placeholder label="date to be announced by the temple" />.
+            Thursday 24 December 2026 · Karthigai Deepam 2027 — date to be announced by the temple.
           </p>
         </Reveal>
       </section>
@@ -497,9 +498,7 @@ export default async function GuidePage({ params }: Props) {
             <div className="card rounded-[14px] px-[18px] py-4 flex gap-3">
               <Bus size={20} className="text-saffron-text shrink-0 mt-0.5" aria-hidden />
               <div>
-                <p className="font-semibold flex flex-wrap items-center gap-1.5">
-                  Bengaluru → <Placeholder label="~ km" />
-                </p>
+                <p className="font-semibold">Bengaluru → about 200 km</p>
                 <p className="mt-0.5 text-sm text-ink-2">
                   About 5 h by road via Krishnagiri; overnight buses
                 </p>
@@ -539,38 +538,51 @@ export default async function GuidePage({ params }: Props) {
             </div>
             {[
               {
-                name: "Sri Ramana Ashram",
-                text: "At the foot of the hill on the Girivalam road; meditation hall, library, Skandashram path.",
+                name: "Sri Ramanasramam (Ramana Ashram)",
+                text: "At the foot of the hill, about 2 km from the temple · 5:30 AM – 8:30 PM, shrines closed 11 AM – 2 PM.",
+                href: "/ramana-ashram-tiruvannamalai",
               },
               {
                 name: "Seshadri Swamigal Ashram",
-                text: "Beside Ramana Ashram; samadhi shrine of the saint.",
+                text: "Beside Ramanasramam; the saint's samadhi · listed as 6 AM – 12:30 PM and 3:30 – 8:30 PM.",
               },
               {
                 name: "Yogi Ramsuratkumar Ashram",
-                text: "Large hall for bhajans and meditation, near Agni Lingam.",
+                text: "Agraharakollai, Chengam Road · chanting 6 – 7 AM and 6:15 – 7:15 PM, then satsang.",
               },
-            ].map((a) => (
+            ].map((a: { name: string; text: string; href?: string }) => (
               <div key={a.name} className="card rounded-[14px] px-[18px] py-4 flex gap-3">
                 <Footprints size={20} className="text-saffron-text shrink-0 mt-0.5" aria-hidden />
                 <div>
-                  <p className="font-semibold">{a.name}</p>
-                  <p className="mt-0.5 text-sm text-ink-2 flex flex-wrap items-center gap-1.5">
-                    {a.text} <Placeholder label="Timings" />
+                  <p className="font-semibold">
+                    {a.href ? (
+                      <Link href={a.href} className="hover:text-saffron-text hover:underline underline-offset-4">
+                        {a.name}
+                      </Link>
+                    ) : (
+                      a.name
+                    )}
                   </p>
+                  <p className="mt-0.5 text-sm text-ink-2">{a.text}</p>
                 </div>
               </div>
             ))}
           </div>
+          <ArrowLink href="/ashrams-in-tiruvannamalai">All ashrams in Tiruvannamalai</ArrowLink>
         </Reveal>
         </div>
       </section>
+
+      <AbroadVisitors />
 
       {/* More guides */}
       <section className="container-site pt-4 pb-2">
         <div className="card rounded-2xl p-5 md:p-6 flex flex-wrap items-center gap-x-6 gap-y-3">
           <p className="eyebrow-gold w-full sm:w-auto">More Tiruvannamalai guides</p>
           <Link href="/arunachaleswarar-temple" className="link-arrow">Arunachaleswarar Temple: booking &amp; history</Link>
+          <Link href="/temples-in-tiruvannamalai" className="link-arrow">Temples in Tiruvannamalai</Link>
+          <Link href="/ashrams-in-tiruvannamalai" className="link-arrow">Ashrams in Tiruvannamalai</Link>
+          <Link href="/ramana-ashram-tiruvannamalai" className="link-arrow">Ramana Ashram guide</Link>
           <Link href="/places-to-visit-tiruvannamalai" className="link-arrow">Places to visit</Link>
           <Link href="/siddhars-of-tiruvannamalai" className="link-arrow">Siddhars &amp; jeeva samadhis</Link>
           <Link href="/blog/karthigai-deepam-2026-tiruvannamalai" className="link-arrow">Karthigai Deepam 2026</Link>

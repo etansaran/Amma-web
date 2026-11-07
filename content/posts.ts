@@ -222,7 +222,7 @@ export const posts: Post[] = [
     body: [
       {
         type: "p",
-        text: "Tiruvannamalai temple timings are the first thing most pilgrims look up before a trip. The Arunachaleswarar temple, the great Shiva temple at the foot of Arunachala, is open for darshan from 5:30 AM to 8:00 PM, according to the temple's official website (annamalaiyar.hrce.tn.gov.in). On Saturdays, Sundays, Pournami, holidays and crowded days it closes at 7:30 PM. Festival days such as Karthigai Deepam follow their own schedule.",
+        text: "Tiruvannamalai temple timings are the first thing most pilgrims look up before a trip. The Arunachaleswarar temple, the great Shiva temple at the foot of Arunachala, is open for darshan from 5:30 AM to 8:00 PM, according to the temple's official website (annamalaiyar.hrce.tn.gov.in). On Saturdays, Sundays, Pournami, holidays and crowded days, darshan is allowed only until 7:30 PM. Festival days such as Karthigai Deepam follow their own schedule.",
       },
       { type: "h2", text: "Daily timings at a glance" },
       {

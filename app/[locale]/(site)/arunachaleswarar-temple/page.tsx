@@ -25,7 +25,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { IconCircle } from "@/components/ui/IconCircle";
 import { FAQ } from "@/components/ui/FAQ";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
-import { AshramStopCard, JumpLinks, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
+import { AbroadVisitors, AshramStopCard, GuideByline, JumpLinks, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -106,7 +106,7 @@ const facts: { k: string; v: string }[] = [
 const faqs = [
   {
     question: "What are the Arunachaleswarar temple timings in Tiruvannamalai?",
-    answer: `According to the temple's official website, darshan is from 5:30 AM to 8:00 PM, closing at 7:30 PM on Saturdays, Sundays, Pournami, holidays and crowded days. The six daily poojas run from about 5:30 AM (Ushathkalam) to 10 PM (Ardhajamam).`,
+    answer: `According to the temple's official website, darshan is from 5:30 AM to 8:00 PM, and is allowed only until 7:30 PM on Saturdays, Sundays, Pournami, holidays and crowded days. The six daily poojas run from about 5:30 AM (Ushathkalam) to 10 PM (Ardhajamam).`,
   },
   {
     question: "What is the official website of Tiruvannamalai temple?",
@@ -214,6 +214,7 @@ export default async function TemplePage({ params }: Props) {
             .
           </QuickAnswer>
         </Reveal>
+        <GuideByline checked="2026-11-06" className="mt-4" />
       </section>
 
       {/* Timings */}
@@ -339,6 +340,8 @@ export default async function TemplePage({ params }: Props) {
       </section>
 
       {/* FAQ */}
+      <AbroadVisitors />
+
       <section id="faq" className="container-site section-pad flex flex-wrap gap-8 md:gap-10 scroll-mt-24">
         <Reveal className="flex-[1_1_300px] min-w-0 flex flex-col gap-3">
           <Eyebrow>Questions people ask</Eyebrow>
