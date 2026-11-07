@@ -175,6 +175,7 @@ export const allRoutes = [
   "/places-to-visit-tiruvannamalai",
   "/siddhars-of-tiruvannamalai",
   "/mouna-swami",
+  "/raghava-lawrence-mouna-siddhar",
   "/privacy",
   "/terms",
   "/refund-policy",

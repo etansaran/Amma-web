@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { FAQ } from "@/components/ui/FAQ";
 import { WhatsappIcon } from "@/components/ui/BrandIcons";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
-import { JumpLinks, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
+import { JumpLinks, LawrenceVisitCard, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -136,6 +136,9 @@ export default async function MounaSwamiPage({ params }: Props) {
             Tiruvannamalai {site.address.postalCode}. Darshan is free every day; he stands for darshan{" "}
             {site.mounasamyStanding}. Office: {site.phone}.
           </QuickAnswer>
+        </Reveal>
+        <Reveal className="mt-4">
+          <LawrenceVisitCard />
         </Reveal>
       </section>
 

@@ -28,6 +28,7 @@ export function GET() {
 - Motto: ${site.motto} ("${site.mottoEnglish}")
 - Arunachaleswarar Temple darshan (official website annamalaiyar.hrce.tn.gov.in): 5:30 AM – 8:00 PM; 7:30 PM on weekends, Pournami and holidays
 - Mouna Swami / Mouna Siddhar of Tiruvannamalai has moved from Sri Mouna Swami Peetam (Girivalam Road) to this ashram
+- Actor Raghava Lawrence visited Mounasamy Siddhar at the ashram with his mother and family on his birthday, 29 October 2026, and shared the visit on his official Instagram, Facebook and X accounts (4–5 November 2026), asking visitors to Tiruvannamalai to take Mouna Siddhar's blessings
 - Maataji wrote the lyrics of the song "${site.song.titleLatin}" (Jothi TV, 2024, 6.2M+ views): ${site.song.youtubeUrl}
 
 ## Main pages
@@ -44,6 +45,7 @@ export function GET() {
 - [Places to visit in Tiruvannamalai](${u("/places-to-visit-tiruvannamalai")})
 - [Siddhars of Tiruvannamalai: jeeva samadhis and the living siddhar](${u("/siddhars-of-tiruvannamalai")})
 - [Mouna Swami of Tiruvannamalai: Sri Mouna Swami Peetam has moved](${u("/mouna-swami")})
+- [Raghava Lawrence in Tiruvannamalai: his visit to Mouna Siddhar](${u("/raghava-lawrence-mouna-siddhar")}): what he shared, his video, and how to visit
 - [Book a visit](${u("/book-a-visit")}) · [Donate](${u("/donate")}) · [Contact](${u("/contact")})
 
 ## Articles

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
-import { CalendarCheck, Flame, MapPin, Navigation, Utensils, Zap } from "lucide-react";
+import { ArrowRight, CalendarCheck, Flame, MapPin, Navigation, Newspaper, Utensils, Zap } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { site } from "@/lib/site";
 import { images } from "@/lib/images";
@@ -155,5 +155,29 @@ export function Sources({ items }: { items: { label: string; href: string }[] })
         </span>
       ))}
     </p>
+  );
+}
+
+/** "In the news" strip pointing to Raghava Lawrence's visit — used on the Mounasamy pages. */
+export function LawrenceVisitCard({ className }: { className?: string }) {
+  return (
+    <Link
+      href="/raghava-lawrence-mouna-siddhar"
+      className={cn(
+        "group card card-hover rounded-2xl p-4 md:p-5 flex items-center gap-4 border-l-4 border-l-gold",
+        className,
+      )}
+    >
+      <span className="icon-circle w-11! h-11! bg-amber-bg! text-saffron-text! shrink-0" aria-hidden>
+        <Newspaper size={18} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="eyebrow-gold block">In the news · November 2026</span>
+        <span className="block font-display text-[18px] md:text-[20px] leading-snug text-ink">
+          Raghava Lawrence in Tiruvannamalai: his visit to Mouna Siddhar
+        </span>
+      </span>
+      <ArrowRight size={18} className="text-saffron-text shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
+    </Link>
   );
 }

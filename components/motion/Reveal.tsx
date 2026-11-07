@@ -49,16 +49,19 @@ export function Reveal({
 export function RevealGroup({
   children,
   className,
+  as: Tag = "div",
 }: {
   children: ReactNode;
   className?: string;
+  /** Use "ol" / "ul" when the items are <RevealItem as="li">. */
+  as?: "div" | "ol" | "ul";
   /** Kept for API compatibility; the stagger step is set in CSS. */
   stagger?: number;
 }) {
   return (
-    <div className={className} data-reveal-group="">
+    <Tag className={className} data-reveal-group="">
       {children}
-    </div>
+    </Tag>
   );
 }
 

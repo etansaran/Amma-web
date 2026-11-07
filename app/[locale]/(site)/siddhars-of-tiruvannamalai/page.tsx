@@ -15,7 +15,7 @@ import { PhotoFigure } from "@/components/ui/PhotoFigure";
 import { Button } from "@/components/ui/Button";
 import { FAQ } from "@/components/ui/FAQ";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
-import { JumpLinks, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
+import { JumpLinks, LawrenceVisitCard, QuickAnswer, Sources, VisitAshramBand } from "@/components/guide/GuideBits";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -222,6 +222,7 @@ export default async function SiddharsPage({ params }: Props) {
             <Button href="/mounasamy" variant="night">About Mounasamy</Button>
             <Button href="/mounasamy/darshan" variant="outline-saffron">Darshan location &amp; timings</Button>
           </div>
+          <LawrenceVisitCard className="mt-2" />
         </Reveal>
       </section>
 

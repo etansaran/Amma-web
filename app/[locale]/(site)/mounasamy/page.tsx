@@ -32,6 +32,7 @@ import { IconCircle } from "@/components/ui/IconCircle";
 import { Placeholder } from "@/components/ui/Placeholder";
 import { FAQRich, type FaqRichItem } from "@/components/ui/FAQRich";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/Reveal";
+import { LawrenceVisitCard } from "@/components/guide/GuideBits";
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -279,6 +280,12 @@ export default async function MounasamyPage({ params }: Props) {
             </RevealItem>
           ))}
         </RevealGroup>
+      </section>
+
+      <section className="container-site pt-6">
+        <Reveal>
+          <LawrenceVisitCard />
+        </Reveal>
       </section>
 
       {/* Who is Mounasamy */}
